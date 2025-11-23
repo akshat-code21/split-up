@@ -1,5 +1,5 @@
 import { client } from "@repo/db";
-import { checkForUser, type NotFoundError } from "..";
+import { checkForUser, checkForMember, checkPayerIsMember,type NotFoundError } from "..";
 import type { User } from "./groupService";
 export type ExpenseParticipantInput = {
 	userId: string;
@@ -24,29 +24,7 @@ export type CreateExpenseOutput = {
 	date: Date;
 };
 
-const checkForMember = async (requesterId: string, groupId: string) => {
-	const isMember = await client.groupMember.findUnique({
-		where: {
-			userId_groupId: {
-				userId: requesterId,
-				groupId: groupId,
-			},
-		},
-	});
-	return !!isMember;
-};
 
-const checkPayerIsMember = async (payerId: string, groupId: string) => {
-	const isMember = await client.groupMember.findUnique({
-		where: {
-			userId_groupId: {
-				userId: payerId,
-				groupId: groupId,
-			},
-		},
-	});
-	return !!isMember;
-};
 
 export const createExpense = async (
 	requesterId: string,
