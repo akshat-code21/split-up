@@ -1,136 +1,339 @@
-import Image from "next/image";
-import { Card } from "@repo/ui/card";
-import { Gradient } from "@repo/ui/gradient";
-import { TurborepoLogo } from "@repo/ui/turborepo-logo";
+import { Navbar } from "@/components/Navbar"
+import { Footer } from '@/components/Footer'
+import { Button } from "@repo/ui/components/ui/button"
+import { Card, CardContent } from "@repo/ui/components/ui/card"
+import { ArrowRight, Zap, Globe, Smartphone, PieChart, CheckCircle2, Receipt, Wallet } from "lucide-react"
+import { FadeIn, FadeInStagger, FadeInItem, ScaleIn } from "@repo/ui/components/ui/motion"
 
-const LINKS = [
-  {
-    title: "Docs",
-    href: "https://turborepo.com/docs",
-    description: "Find in-depth information about Turborepo features and API.",
-  },
-  {
-    title: "Learn",
-    href: "https://turborepo.com/docs/handbook",
-    description: "Learn more about monorepos with our handbook.",
-  },
-  {
-    title: "Templates",
-    href: "https://turborepo.com/docs/getting-started/from-example",
-    description: "Choose from over 15 examples and deploy with a single click.",
-  },
-  {
-    title: "Deploy",
-    href: "https://vercel.com/new",
-    description:
-      "Instantly deploy your Turborepo to a shareable URL with Vercel.",
-  },
-];
-
-export default function Page() {
+export default function LandingPage() {
   return (
-    <main className="flex flex-col items-center justify-between min-h-screen p-24">
-      <div className="z-10 items-center justify-between w-full max-w-5xl font-mono text-sm lg:flex">
-        <p className="fixed top-0 left-0 flex justify-center w-full px-4 pt-8 pb-6 border backdrop-blur-2xl border-neutral-800 from-inherit lg:static lg:w-auto lg:rounded-xl lg:p-4">
-          examples/with-tailwind -&nbsp;
-          <code className="font-mono font-bold">web</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex items-end justify-center w-full h-48 lg:static lg:h-auto lg:w-auto">
-          <a
-            className="flex gap-2 p-8 pointer-events-none place-items-center lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-turbo&utm_medium=basic&utm_campaign=create-turbo"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            By{" "}
-            <Image
-              alt="Vercel Logo"
-              className="dark:invert"
-              height={24}
-              priority
-              src="/vercel.svg"
-              width={100}
-            />
-          </a>
-        </div>
+    <div className="min-h-screen flex flex-col bg-background text-foreground overflow-hidden">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[20%] w-[40vw] h-[40vw] bg-primary/10 rounded-full blur-[120px] opacity-40 mix-blend-screen" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[30vw] h-[30vw] bg-blue-500/10 rounded-full blur-[100px] opacity-30 mix-blend-screen" />
       </div>
 
-      <div className="relative flex place-items-center ">
-        <div className="font-sans w-auto pb-16 pt-[48px] md:pb-24 lg:pb-32 md:pt-16 lg:pt-20 flex justify-between gap-8 items-center flex-col relative z-0">
-          <div className="z-50 flex items-center justify-center w-full">
-            <div className="absolute min-w-[614px] min-h-[614px]">
-              <Image
-                alt="Turborepo"
-                height={614}
-                src="circles.svg"
-                width={614}
-              />
-            </div>
-            <div className="absolute z-50 flex items-center justify-center w-64 h-64">
-              <Gradient
-                className="opacity-90 w-[120px] h-[120px]"
-                conic
-                small
-              />
-            </div>
+      <Navbar />
 
-            <div className="flex justify-center items-center z-50">
-              <TurborepoLogo />
-            </div>
-          </div>
-          <Gradient
-            className="top-[-500px] opacity-[0.15] w-[1000px] h-[1000px]"
-            conic
-          />
-          <div className="z-50 flex flex-col items-center justify-center gap-5 px-6 text-center lg:gap-6">
-            <svg
-              className="w-[160px] md:w-[200px] fill-black dark:fill-white"
-              viewBox="0 0 506 50"
-              width={200}
-              xmlns="http://www.w3.org/2000/svg"
+      <main className="flex-1 relative z-10">
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-4 md:px-6 overflow-hidden">
+          <div className="container mx-auto text-center relative z-10">
+            <FadeIn
+              direction="down"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8"
             >
-              <title>Turborepo logo</title>
-              <path d="M53.7187 12.0038V1.05332H0.945312V12.0038H20.8673V48.4175H33.7968V12.0038H53.7187Z" />
-              <path d="M83.5362 49.1431C99.764 49.1431 108.67 40.8972 108.67 27.3081V1.05332H95.7401V26.0547C95.7401 33.6409 91.7821 37.9287 83.5362 37.9287C75.2904 37.9287 71.3324 33.6409 71.3324 26.0547V1.05332H58.4029V27.3081C58.4029 40.8972 67.3084 49.1431 83.5362 49.1431Z" />
-              <path d="M128.462 32.7174H141.325L151.484 48.4175H166.327L154.848 31.3321C161.313 29.0232 165.271 23.8778 165.271 16.8853C165.271 6.72646 157.685 1.05332 146.141 1.05332H115.532V48.4175H128.462V32.7174ZM128.462 22.4925V11.8719H145.481C150.033 11.8719 152.54 13.8509 152.54 17.2152C152.54 20.3816 150.033 22.4925 145.481 22.4925H128.462Z" />
-              <path d="M171.287 48.4175H205.128C215.683 48.4175 221.752 43.404 221.752 35.0262C221.752 29.419 218.189 25.593 213.967 23.8778C216.87 22.4925 220.432 19.1942 220.432 13.9828C220.432 5.60502 214.495 1.05332 204.006 1.05332H171.287V48.4175ZM183.689 19.59V11.542H202.687C206.249 11.542 208.228 12.9273 208.228 15.566C208.228 18.2047 206.249 19.59 202.687 19.59H183.689ZM183.689 29.2871H203.875C207.371 29.2871 209.284 31.0022 209.284 33.5749C209.284 36.1476 207.371 37.8628 203.875 37.8628H183.689V29.2871Z" />
-              <path d="M253.364 0.261719C236.806 0.261719 224.866 10.6185 224.866 24.7354C224.866 38.8523 236.806 49.2091 253.364 49.2091C269.922 49.2091 281.796 38.8523 281.796 24.7354C281.796 10.6185 269.922 0.261719 253.364 0.261719ZM253.364 11.4761C262.072 11.4761 268.602 16.6215 268.602 24.7354C268.602 32.8493 262.072 37.9947 253.364 37.9947C244.656 37.9947 238.126 32.8493 238.126 24.7354C238.126 16.6215 244.656 11.4761 253.364 11.4761Z" />
-              <path d="M300.429 32.7174H313.292L323.451 48.4175H338.294L326.815 31.3321C333.28 29.0232 337.238 23.8778 337.238 16.8853C337.238 6.72646 329.652 1.05332 318.108 1.05332H287.499V48.4175H300.429V32.7174ZM300.429 22.4925V11.8719H317.448C322 11.8719 324.507 13.8509 324.507 17.2152C324.507 20.3816 322 22.4925 317.448 22.4925H300.429Z" />
-              <path d="M343.254 1.05332V48.4175H389.299V37.467H355.92V29.7489H385.539V19.0622H355.92V12.0038H389.299V1.05332H343.254Z" />
-              <path d="M408.46 33.3111H425.677C437.221 33.3111 444.807 27.7699 444.807 17.2152C444.807 6.59453 437.221 1.05332 425.677 1.05332H395.53V48.4175H408.46V33.3111ZM408.46 22.5585V11.8719H424.951C429.569 11.8719 432.076 13.8509 432.076 17.2152C432.076 20.5135 429.569 22.5585 424.951 22.5585H408.46Z" />
-              <path d="M476.899 0.261719C460.341 0.261719 448.401 10.6185 448.401 24.7354C448.401 38.8523 460.341 49.2091 476.899 49.2091C493.456 49.2091 505.33 38.8523 505.33 24.7354C505.33 10.6185 493.456 0.261719 476.899 0.261719ZM476.899 11.4761C485.606 11.4761 492.137 16.6215 492.137 24.7354C492.137 32.8493 485.606 37.9947 476.899 37.9947C468.191 37.9947 461.66 32.8493 461.66 24.7354C461.66 16.6215 468.191 11.4761 476.899 11.4761Z" />
-            </svg>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              <span className="text-xs font-medium text-white uppercase tracking-wider">v2.0 is now live</span>
+            </FadeIn>
+
+            <FadeIn delay={0.1}>
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-gradient font-heading">
+                Split bills, <br className="hidden md:block" />
+                <span className="text-white">not friendships.</span>
+              </h1>
+            </FadeIn>
+
+            <FadeIn delay={0.2}>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+                The modern way to track shared expenses. Settle debts instantly with anyone, anywhere, in any currency.
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={0.3} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button size="lg" className="rounded-full h-12 px-8 text-base bg-white text-black hover:bg-white/90">
+                Start for free
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full h-12 px-8 text-base border-white/10 bg-white/5 hover:bg-white/10 text-white"
+              >
+                View Demo <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </FadeIn>
+
+            <FadeIn delay={0.5}>
+              <p className="mt-6 text-sm text-muted-foreground">Mobile app coming soon to iOS and Android</p>
+            </FadeIn>
           </div>
-        </div>
-      </div>
 
-      <div className="grid mb-32 text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        {LINKS.map(({ title, href, description }) => (
-          <Card href={href} key={title} title={title}>
-            {description}
-          </Card>
-        ))}
-      </div>
+          {/* Abstract UI Preview */}
+          <ScaleIn delay={0.4} className="mt-20 mx-auto max-w-5xl relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-2xl blur opacity-20" />
+            <div className="relative rounded-xl border border-white/10 bg-black/50 backdrop-blur-xl p-2 md:p-4 shadow-2xl">
+              <div className="rounded-lg overflow-hidden bg-black aspect-[16/9] relative border border-white/5">
+                {/* Mock UI Elements */}
+                <div className="absolute top-0 left-0 right-0 h-12 border-b border-white/10 bg-white/5 flex items-center px-4 gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500/50" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/50" />
+                </div>
+                <div className="grid grid-cols-12 h-full pt-12">
+                  <div className="col-span-3 border-r border-white/10 bg-white/[0.02] p-4 hidden md:block">
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className="h-8 w-full rounded bg-white/5 animate-pulse"
+                          style={{ opacity: 1 - i * 0.2 }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="col-span-12 md:col-span-9 p-6 md:p-8 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+                      <Receipt className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-medium text-white mb-2 font-heading">Trip to Tokyo</h3>
+                    <p className="text-muted-foreground mb-6">Total spent: $4,250.00</p>
+                    <div className="w-full max-w-md space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-white/[0.02]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-white/10" />
+                            <div className="h-4 w-24 bg-white/10 rounded" />
+                          </div>
+                          <div className="h-4 w-16 bg-white/10 rounded" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScaleIn>
+        </section>
 
-      <SignIn />
-    </main>
-  );
+        {/* Features Grid */}
+        <section id="features" className="py-24 px-4 md:px-6 relative">
+          <div className="container mx-auto max-w-6xl">
+            <FadeIn className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 font-heading">Everything you need to settle up</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Powerful features wrapped in a simple, intuitive interface. Designed for groups of any size.
+              </p>
+            </FadeIn>
+
+            <FadeInStagger className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FadeInItem>
+                <Card className="bg-white/[0.02] border-white/10 backdrop-blur-sm hover:bg-white/[0.04] transition-colors h-full">
+                  <CardContent className="p-8">
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                      <Zap className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-3 font-heading">Instant Settle Up</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Connect your bank account or card and settle debts instantly. No more manual transfers or awkward
+                      reminders.
+                    </p>
+                  </CardContent>
+                </Card>
+              </FadeInItem>
+
+              <FadeInItem>
+                <Card className="bg-white/[0.02] border-white/10 backdrop-blur-sm hover:bg-white/[0.04] transition-colors h-full">
+                  <CardContent className="p-8">
+                    <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-6">
+                      <Globe className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-3 font-heading">Multi-currency</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Traveling abroad? We automatically convert 150+ currencies at the real mid-market rate.
+                    </p>
+                  </CardContent>
+                </Card>
+              </FadeInItem>
+
+              <FadeInItem>
+                <Card className="bg-white/[0.02] border-white/10 backdrop-blur-sm hover:bg-white/[0.04] transition-colors h-full">
+                  <CardContent className="p-8">
+                    <div className="h-12 w-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-6">
+                      <PieChart className="h-6 w-6 text-purple-500" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-3 font-heading">Smart Insights</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Visualize your spending habits with beautiful charts. See exactly where your money goes each
+                      month.
+                    </p>
+                  </CardContent>
+                </Card>
+              </FadeInItem>
+            </FadeInStagger>
+
+            <FadeInStagger delay={0.2} className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FadeInItem>
+                <Card className="bg-white/[0.02] border-white/10 backdrop-blur-sm hover:bg-white/[0.04] transition-colors h-full">
+                  <CardContent className="p-8 flex flex-col md:flex-row gap-8 items-center">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-white mb-3 font-heading">Receipt Scanning</h3>
+                      <p className="text-muted-foreground leading-relaxed mb-4">
+                        Snap a photo of any receipt. Our AI automatically extracts items, prices, and taxes.
+                      </p>
+                      <div className="flex gap-2">
+                        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white">
+                          99% Accuracy
+                        </div>
+                        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white">
+                          Instant
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-full md:w-48 h-32 bg-gradient-to-br from-primary/20 to-transparent rounded-lg border border-white/10 flex items-center justify-center relative overflow-hidden shrink-0">
+                      <Smartphone className="h-10 w-10 text-primary absolute z-10" />
+                      <div className="absolute inset-0 bg-[url('/placeholder-pattern.svg')] opacity-20" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </FadeInItem>
+
+              <FadeInItem>
+                <Card className="bg-white/[0.02] border-white/10 backdrop-blur-sm hover:bg-white/[0.04] transition-colors h-full">
+                  <CardContent className="p-8 flex flex-col md:flex-row gap-8 items-center">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-white mb-3 font-heading">Recurring Expenses</h3>
+                      <p className="text-muted-foreground leading-relaxed mb-4">
+                        Rent, utilities, subscriptions? Set them up once and we'll automatically split them every month.
+                      </p>
+                      <div className="flex gap-2">
+                        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white">
+                          Automated
+                        </div>
+                        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white">
+                          Notifications
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-full md:w-48 h-32 bg-gradient-to-br from-blue-500/20 to-transparent rounded-lg border border-white/10 flex items-center justify-center relative overflow-hidden shrink-0">
+                      <Wallet className="h-10 w-10 text-blue-500 absolute z-10" />
+                      <div className="absolute inset-0 bg-[url('/placeholder-pattern.svg')] opacity-20" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </FadeInItem>
+            </FadeInStagger>
+          </div>
+        </section>
+
+        {/* Why Us / Stats */}
+        <section className="py-24 border-y border-white/5 bg-white/[0.01] overflow-hidden">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <FadeIn direction="right" className="space-y-8">
+                <h2 className="text-3xl md:text-5xl font-bold tracking-tight font-heading">
+                  Trusted by millions <br />
+                  <span className="text-muted-foreground">to keep expenses fair.</span>
+                </h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  We built Split Up because money ruins relationships. We wanted to fix that. Now, we handle over $1B in
+                  shared expenses every year with bank-grade security and zero hidden fees.
+                </p>
+
+                <div className="space-y-4">
+                  {[
+                    "No hidden transaction fees",
+                    "Bank-level 256-bit encryption",
+                    "Real-time synchronization across devices",
+                    "Export to PDF and CSV",
+                  ].map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-6 w-6 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      </div>
+                      <span className="text-white">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </FadeIn>
+
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-500 rounded-2xl blur-2xl opacity-20" />
+                <FadeInStagger className="grid grid-cols-2 gap-4 relative">
+                  <div className="space-y-4 pt-8">
+                    <FadeInItem>
+                      <Card className="bg-secondary/50 border-white/10 backdrop-blur h-full">
+                        <CardContent className="p-6 text-center">
+                          <div className="text-3xl font-bold text-white mb-1">2M+</div>
+                          <div className="text-sm text-muted-foreground">Active Users</div>
+                        </CardContent>
+                      </Card>
+                    </FadeInItem>
+                    <FadeInItem>
+                      <Card className="bg-secondary/50 border-white/10 backdrop-blur h-full">
+                        <CardContent className="p-6 text-center">
+                          <div className="text-3xl font-bold text-white mb-1">150+</div>
+                          <div className="text-sm text-muted-foreground">Currencies</div>
+                        </CardContent>
+                      </Card>
+                    </FadeInItem>
+                  </div>
+                  <div className="space-y-4">
+                    <FadeInItem>
+                      <Card className="bg-secondary/50 border-white/10 backdrop-blur h-full">
+                        <CardContent className="p-6 text-center">
+                          <div className="text-3xl font-bold text-white mb-1">$1B+</div>
+                          <div className="text-sm text-muted-foreground">Expensed Tracked</div>
+                        </CardContent>
+                      </Card>
+                    </FadeInItem>
+                    <FadeInItem>
+                      <Card className="bg-secondary/50 border-white/10 backdrop-blur h-full">
+                        <CardContent className="p-6 text-center">
+                          <div className="text-3xl font-bold text-white mb-1">4.9</div>
+                          <div className="text-sm text-muted-foreground">App Store Rating</div>
+                        </CardContent>
+                      </Card>
+                    </FadeInItem>
+                  </div>
+                </FadeInStagger>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-32 px-4 md:px-6 relative overflow-hidden">
+          <div className="absolute inset-0 bg-primary/5"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] opacity-50 pointer-events-none"></div>
+
+          <div className="container mx-auto relative z-10 text-center max-w-3xl">
+            <FadeIn>
+              <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-white font-heading">
+                Ready to settle up?
+              </h2>
+            </FadeIn>
+            <FadeIn delay={0.1}>
+              <p className="text-xl text-muted-foreground mb-10">
+                Join millions of roommates, couples, and travelers who use Split Up to keep life fair.
+              </p>
+            </FadeIn>
+            <FadeIn delay={0.2} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                size="lg"
+                className="rounded-full h-14 px-8 text-lg bg-white text-black hover:bg-white/90 w-full sm:w-auto"
+              >
+                Download for Free
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full h-14 px-8 text-lg border-white/10 bg-transparent hover:bg-white/5 text-white w-full sm:w-auto"
+              >
+                Open in Browser
+              </Button>
+            </FadeIn>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  )
 }
 
-
-import { signIn } from "./(auth)/auth"
-
-export function SignIn() {
-  return (
-    <form
-      action={async () => {
-        "use server"
-        await signIn("google",{
-          redirectTo : "/dashboard"
-        })
-      }}
-    >
-      <button type="submit" className="bg-white text-black p-5 rounded-md cursor-pointer">Signin with Google</button>
-    </form>
-  )
-} 

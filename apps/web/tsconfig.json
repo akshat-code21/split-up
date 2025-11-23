@@ -9,10 +9,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./*"
       ],
       "@repo/ui/*": [
-        "../../packages/ui/src/*"
+        "../../packages/ui/src/*",
+        "../../packages/ui/*"
       ]
     }
   },
