@@ -36,6 +36,14 @@ export const checkPayerIsMember = async (payerId: string, groupId: string) => {
 	return !!isMember;
 };
 
+export const checkForGroup = async (groupId: string) => {
+	const isGroup = await client.group.findUnique({
+		where: {
+			id: groupId,
+		},
+	});
+	return !!isGroup;
+};
 
 export type NotFoundError = {
 	message?: string;
