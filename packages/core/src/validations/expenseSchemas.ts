@@ -6,7 +6,6 @@ export const participantSchema = z.object({
 });
 
 export const createExpenseSchema = z.object({
-  groupId: z.string(),
   payerId: z.string(),
   amount: z.number().min(1),
   description: z.string().min(1),
@@ -18,7 +17,6 @@ export const createExpenseSchema = z.object({
 export type CreateExpenseSchema = z.infer<typeof createExpenseSchema>;
 
 export const updateExpenseSchema = z.object({
-  expenseId: z.string(),
   description: z.string().optional(),
   amount: z.number().optional(),
   participants: z.array(participantSchema).optional(),

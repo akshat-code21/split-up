@@ -111,6 +111,26 @@ export default function Page() {
           </Card>
         ))}
       </div>
+
+      <SignIn />
     </main>
   );
 }
+
+
+import { signIn } from "./(auth)/auth"
+
+export function SignIn() {
+  return (
+    <form
+      action={async () => {
+        "use server"
+        await signIn("google",{
+          redirectTo : "/dashboard"
+        })
+      }}
+    >
+      <button type="submit" className="bg-white text-black p-5 rounded-md cursor-pointer">Signin with Google</button>
+    </form>
+  )
+} 

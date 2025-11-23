@@ -8,7 +8,6 @@ export const createGroupSchema = z.object({
 export type CreateGroupSchema = z.infer<typeof createGroupSchema>;
 
 export const addMemberSchema = z.object({
-  groupId: z.string(),
   userIdToAdd: z.string(),
 });
 
