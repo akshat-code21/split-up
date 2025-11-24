@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "./app/(auth)/auth";
+import { Session } from "next-auth";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   let isAuthenticated = false;
+  let session: Session | null = null;
   try {
-    const session = await auth();
+    session = await auth();
     isAuthenticated = !!session?.user;
   } catch (error) {
     console.log(error);
@@ -24,6 +26,13 @@ export async function proxy(request: NextRequest) {
 
   const headers = new Headers(request.headers);
   headers.set("x-current-path", pathname);
+
+  if (isAuthenticated && session?.user && pathname.startsWith("/dashboard")) {
+    headers.set("x-user-id", session.user.id || "");
+    headers.set("x-user-name", session.user.name || "");
+    headers.set("x-user-email", session.user.email || "");
+    headers.set("x-user-image", session.user.image || "");
+  }
   
   return NextResponse.next({ headers });
 }

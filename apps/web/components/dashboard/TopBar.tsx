@@ -8,13 +8,13 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } 
 import { AddExpenseCard } from "@/components/dashboard/AddExpenseCard"
 
 
-export function Topbar({ title = "Dashboard" }: { title?: string }) {
+export function Topbar({ title = "Dashboard" , userName }: { title?: string,userName?:string }) {
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false)
     return (
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-border/50 bg-background/50 backdrop-blur-xl px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
                 <div className="flex flex-1 items-center gap-4">
-                    <h1 className="text-xl font-heading font-semibold text-foreground tracking-tight">{title}</h1>
+                    <h1 className="text-xl font-heading font-semibold text-foreground tracking-tight">Hello, {userName?.split(" ")[0]} !</h1>
                     <div className="hidden md:flex relative max-w-md flex-1 ml-8">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input

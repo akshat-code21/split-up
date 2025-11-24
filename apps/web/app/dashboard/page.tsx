@@ -1,13 +1,3 @@
-// import { auth } from "app/(auth)/auth";
-
-// export default async function Dashboard() {
-//     const session = await auth()
-//     if (!session?.user) return null
-//     return (
-//         <div>{JSON.stringify(session)}</div>
-//     )
-// }
-
 import { SummaryCards } from "@/components/dashboard/SummaryCards"
 import { RecentExpenses } from "@/components/dashboard/RecentExpenses"
 import { GroupBalances } from "@/components/dashboard/GroupBalances"

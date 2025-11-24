@@ -1,10 +1,11 @@
+"use client"
 import Link from "next/link"
 import { LayoutDashboard, Users, Receipt, ArrowLeftRight, CreditCard, Settings, LogOut, Split } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { headers } from "next/headers";
-import { signOut } from "@/app/(auth)/auth"
+import { signOut } from "next-auth/react"
+import { usePathname } from "next/navigation"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -14,10 +15,8 @@ const navigation = [
   { name: "Balances", href: "/dashboard/balances", icon: CreditCard },
 ]
 
-export async function Sidebar() {
-  // const pathname = usePathname()
-  const headerList = await headers();
-  const pathname = headerList.get("x-current-path") || "/dashboard";
+export function Sidebar({ userImageUrl, userName, userEmail }: { userImageUrl: string, userName: string, userEmail: string }) {
+  const pathname = usePathname();
   return (
     <div className="hidden border-r bg-card/30 backdrop-blur-xl md:flex md:w-64 md:flex-col fixed inset-y-0 z-50">
       <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
@@ -59,14 +58,14 @@ export async function Sidebar() {
       <div className="flex flex-col gap-2 p-4 border-t border-border/50 bg-card/20">
         <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group">
           <Avatar className="h-9 w-9 border border-border/50">
-            <AvatarImage src="https://github.com/shadcn.png" alt="User" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarImage src={`${userImageUrl}`} alt="User" />
+            <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col overflow-hidden">
             <p className="text-sm font-medium leading-none text-foreground truncate group-hover:text-primary transition-colors">
-              John Doe
+              {userName}
             </p>
-            <p className="text-xs text-muted-foreground truncate mt-1">john@example.com</p>
+            <p className="text-xs text-muted-foreground truncate mt-1">{userEmail}</p>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-2 mt-2">
@@ -74,9 +73,8 @@ export async function Sidebar() {
             variant="outline"
             size="sm"
             className="w-full justify-center text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10 bg-transparent"
-            onClick={async () => {
-              "use server"
-              await signOut({redirectTo: "/" });
+            onClick={() => {
+              signOut({redirectTo: "/" });
             }}
           >
             <LogOut className="mr-2 h-3.5 w-3.5" />
