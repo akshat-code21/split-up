@@ -20,13 +20,19 @@ const result = NextAuth({
 			if (user) token.id = user.id;
 			return token;
 		},
-
 		async session({ session, token }) {
 			if (token?.id) {
 				session.user.id = token.id as string;
 			}
 			return session;
 		},
+		authorized: async ({ auth }) => {
+			// Logged in users are authenticated, otherwise redirect to login page
+			return !!auth;
+		},
+	},
+	pages: {
+		signIn: "/login",
 	},
 });
 
