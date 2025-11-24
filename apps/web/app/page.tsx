@@ -1,9 +1,9 @@
 import { Navbar } from "@/components/Navbar"
 import { Footer } from '@/components/Footer'
-import { Button } from "@repo/ui/components/ui/button"
-import { Card, CardContent } from "@repo/ui/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Zap, Globe, Smartphone, PieChart, CheckCircle2, Receipt, Wallet } from "lucide-react"
-import { FadeIn, FadeInStagger, FadeInItem, ScaleIn } from "@repo/ui/components/ui/motion"
+import { FadeIn, FadeInStagger, FadeInItem, ScaleIn } from "@repo/ui/motion"
 
 export default function LandingPage() {
   return (
@@ -17,10 +17,11 @@ export default function LandingPage() {
 
       <main className="flex-1 relative z-10">
         {/* Hero Section */}
-        <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-4 md:px-6 overflow-hidden">
+        <section className="relative pt-20 pb-20 md:pt-32 md:pb-32 px-4 md:px-6 overflow-hidden">
           <div className="container mx-auto text-center relative z-10">
             <FadeIn
               direction="down"
+              immediate
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8"
             >
               <span className="relative flex h-2 w-2">
@@ -30,20 +31,20 @@ export default function LandingPage() {
               <span className="text-xs font-medium text-white uppercase tracking-wider">v2.0 is now live</span>
             </FadeIn>
 
-            <FadeIn delay={0.1}>
+            <FadeIn delay={0.1} immediate>
               <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-gradient font-heading">
                 Split bills, <br className="hidden md:block" />
                 <span className="text-white">not friendships.</span>
               </h1>
             </FadeIn>
 
-            <FadeIn delay={0.2}>
+            <FadeIn delay={0.2} immediate>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
                 The modern way to track shared expenses. Settle debts instantly with anyone, anywhere, in any currency.
               </p>
             </FadeIn>
 
-            <FadeIn delay={0.3} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <FadeIn delay={0.3} immediate className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button size="lg" className="rounded-full h-12 px-8 text-base bg-white text-black hover:bg-white/90">
                 Start for free
               </Button>
@@ -56,13 +57,13 @@ export default function LandingPage() {
               </Button>
             </FadeIn>
 
-            <FadeIn delay={0.5}>
+            <FadeIn delay={0.5} immediate>
               <p className="mt-6 text-sm text-muted-foreground">Mobile app coming soon to iOS and Android</p>
             </FadeIn>
           </div>
 
           {/* Abstract UI Preview */}
-          <ScaleIn delay={0.4} className="mt-20 mx-auto max-w-5xl relative">
+          <ScaleIn delay={0.4} immediate className="mt-20 mx-auto max-w-5xl relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-2xl blur opacity-20" />
             <div className="relative rounded-xl border border-white/10 bg-black/50 backdrop-blur-xl p-2 md:p-4 shadow-2xl">
               <div className="rounded-lg overflow-hidden bg-black aspect-[16/9] relative border border-white/5">

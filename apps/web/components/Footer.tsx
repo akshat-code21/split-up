@@ -103,7 +103,7 @@ export function Footer() {
 
         {/* Bottom Section with Large Text */}
         <div className="relative mt-20 flex flex-col items-center justify-end pb-10">
-          <div className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 whitespace-nowrap text-[18vw] md:text-[240px] lg:text-[320px] font-bold leading-none text-white/6 select-none">
+          <div className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 whitespace-nowrap text-[18vw] md:text-[240px] lg:text-[320px] font-bold leading-none text-white/10 select-none">
             Split Up
           </div>
           <p className="relative z-10 text-sm text-muted-foreground text-center">
