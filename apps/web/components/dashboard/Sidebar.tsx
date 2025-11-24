@@ -69,15 +69,11 @@ export function Sidebar() {
             <p className="text-xs text-muted-foreground truncate mt-1">john@example.com</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          <Button variant="outline" size="sm" className="w-full justify-start text-xs h-8 bg-transparent">
-            <Settings className="mr-2 h-3.5 w-3.5" />
-            Settings
-          </Button>
+        <div className="grid grid-cols-1 gap-2 mt-2">
           <Button
             variant="outline"
             size="sm"
-            className="w-full justify-start text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10 bg-transparent"
+            className="w-full justify-center text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10 bg-transparent"
           >
             <LogOut className="mr-2 h-3.5 w-3.5" />
             Log out
