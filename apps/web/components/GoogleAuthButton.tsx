@@ -1,6 +1,6 @@
 import type React from "react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@repo/ui/lib/utils"
+import { cn } from "@/lib/utils"
 import { signIn } from "@/app/(auth)/auth"
 
 interface GoogleAuthButtonProps extends React.ComponentProps<typeof Button> {
