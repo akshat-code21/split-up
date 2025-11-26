@@ -5,18 +5,18 @@ import { NextRequest, NextResponse } from "next/server";
 // add a member to group
 export async function POST(
 	req: NextRequest,
-	{ params }: { params: { groupId: string } }
+	{ params }: { params: Promise<{ groupId: string }> }
 ) {
 	try {
-		const session = await auth();
-		if (!session?.user?.id) {
+		const userId = req.headers.get('x-user-id') || "";
+		if (!userId) {
 			return NextResponse.json(
 				{ success: false, error: "Unauthorized" },
 				{ status: 401 }
 			);
 		}
-		const requesterId = session.user.id;
-		const groupId = params.groupId;
+		const requesterId = userId;
+		const groupId = (await params).groupId;
 		const rawBody = await req.json();
 		const parsed = addMemberSchema.parse(rawBody);
 		const finalData = { ...parsed, groupId };

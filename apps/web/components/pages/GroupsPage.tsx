@@ -12,43 +12,8 @@ import { GroupCard } from "@/components/dashboard/GroupCard"
 import Link from "next/link"
 import { motion } from "framer-motion"
 
-// Mock data
-const mockGroups = [
-  {
-    id: "1",
-    name: "Weekend Trip",
-    icon: "🏖️",
-    memberCount: 4,
-    expenseCount: 12,
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    id: "2",
-    name: "Home Expenses",
-    icon: "🏠",
-    memberCount: 3,
-    expenseCount: 28,
-    color: "from-purple-500 to-pink-500",
-  },
-  {
-    id: "3",
-    name: "Office Lunch",
-    icon: "🍔",
-    memberCount: 8,
-    expenseCount: 45,
-    color: "from-orange-500 to-red-500",
-  },
-  {
-    id: "4",
-    name: "Gym Membership",
-    icon: "💪",
-    memberCount: 2,
-    expenseCount: 6,
-    color: "from-green-500 to-emerald-500",
-  },
-]
 
-const normalizeGroup = (group: { id: string; name: string; icon?: string; memberCount?: number; expenseCount?: number; color?: string }) => ({
+const normalizeGroup = (group: { id: string; name: string; icon?: string | React.ReactNode; memberCount?: number; expenseCount?: number; color?: string }) => ({
   id: group.id,
   name: group.name,
   icon: group.icon || <Receipt className="h-4 w-4" />,
@@ -66,9 +31,6 @@ export default function GroupsPage({ userId, initialGroups }: { userId: string, 
   const filteredGroups = groups.filter((group) => group.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
   const handleCreateGroup = (createdGroup: { id: string; name: string }) => {
-
-    // Optimistically add the new group to the list
-    // Use normalizeGroup to ensure consistent structure
     const newGroup = normalizeGroup({
       id: createdGroup.id,
       name: createdGroup.name,

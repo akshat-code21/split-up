@@ -134,13 +134,18 @@ export const addMember = async (
 
 export type User = {
 	userId: string;
-	name: string;
+	name: string | null;
+	email: string;
+	image: string | null;
 };
 
 export type GroupDetailsOutput = {
 	id: string;
 	name: string;
 	members: Array<User>;
+	// TODO : Create and Add type of Expenses
+	expenses: Array<any>;
+	totalExpenses: number;
 };
 
 export const getGroupDetails = async (
@@ -164,20 +169,40 @@ export const getGroupDetails = async (
 					user: true,
 				},
 			},
+			expenses: {
+				include : {
+					participants : true
+				}
+			},
 		},
 	});
+
 	if (!group) {
 		return {
 			message: "Group does not exist",
 			success: false,
 		};
 	}
+
+	const totalExpenses = await client.expense.aggregate({
+		where: {
+			groupId: groupId,
+		},
+		_sum: {
+			amount: true,
+		},
+	});
+
 	return {
 		id: group.id,
 		name: group.name,
 		members: group.members.map((member) => ({
-			userId: member.userId,
-			name: member.user.name ?? "",
+			userId : member.user.id,
+			name: member.user.name,
+			email: member.user.email,
+			image : member.user.image,
 		})),
+		expenses: group.expenses,
+		totalExpenses: totalExpenses._sum.amount ?? 0,
 	};
 };

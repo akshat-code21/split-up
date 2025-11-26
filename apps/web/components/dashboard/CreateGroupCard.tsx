@@ -3,29 +3,53 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Users } from "lucide-react"
+import { Users, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import axios from "axios"
 
 interface CreateGroupCardProps {
   onCancel?: () => void
-  onSubmit?: (data: { name: string; description?: string }) => void
+  onSubmit?: (group: { id: string; name: string }) => void
   className?: string
 }
 
 export function CreateGroupCard({ onCancel, onSubmit, className }: CreateGroupCardProps) {
   const [groupName, setGroupName] = useState("")
   const [description, setDescription] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (groupName.trim()) {
-      onSubmit?.({ name: groupName, description })
-      setGroupName("")
-      setDescription("")
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/groups`, {
+        name: groupName,
+        description: description || undefined,
+      })
+
+      if (res.data.success && res.data.data) {
+        const createdGroup = res.data.data
+        onSubmit?.(createdGroup) 
+        setGroupName("")
+        setDescription("")
+      } else {
+        setError(res.data.error || "Failed to create group")
+      }
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error || err.response?.data?.message || "Failed to create group")
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to create group")
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -48,6 +72,13 @@ export function CreateGroupCard({ onCancel, onSubmit, className }: CreateGroupCa
 
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="group-name" className="text-sm font-medium">
               Group Name <span className="text-destructive">*</span>
@@ -56,9 +87,13 @@ export function CreateGroupCard({ onCancel, onSubmit, className }: CreateGroupCa
               id="group-name"
               placeholder="Goa Trip"
               value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
+              onChange={(e) => {
+                setGroupName(e.target.value)
+                setError(null)
+              }}
               required
-              className="bg-secondary/50 border-white/10 focus:border-primary/50 transition-all"
+              disabled={isLoading}
+              className="bg-secondary/50 border-white/10 focus:border-primary/50 transition-all disabled:opacity-50"
             />
           </div>
 
@@ -72,7 +107,8 @@ export function CreateGroupCard({ onCancel, onSubmit, className }: CreateGroupCa
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="bg-secondary/50 border-white/10 focus:border-primary/50 transition-all resize-none"
+              disabled={isLoading}
+              className="bg-secondary/50 border-white/10 focus:border-primary/50 transition-all resize-none disabled:opacity-50"
             />
           </div>
         </CardContent>
@@ -83,17 +119,18 @@ export function CreateGroupCard({ onCancel, onSubmit, className }: CreateGroupCa
               type="button"
               variant="ghost"
               onClick={onCancel}
-              className="flex-1 border border-white/10 hover:bg-secondary/50"
+              disabled={isLoading}
+              className="flex-1 border border-white/10 hover:bg-secondary/50 disabled:opacity-50"
             >
               Cancel
             </Button>
           )}
           <Button
             type="submit"
-            disabled={!groupName.trim()}
+            disabled={!groupName.trim() || isLoading}
             className="flex-1 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Group
+            {isLoading ? "Creating..." : "Create Group"}
           </Button>
         </CardFooter>
       </form>

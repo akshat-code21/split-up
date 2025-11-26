@@ -194,6 +194,8 @@ export const getExpensesForGroup = async (
 		payer: {
 			userId: expense.payer.id,
 			name: expense.payer.name ?? "",
+			email: expense.payer.email ?? "",
+			image: expense.payer.image ?? "",
 		},
 		date: expense.date,
 		participants: expense.participants.map((participant) => ({

@@ -34,14 +34,13 @@ export async function POST(req: NextRequest) {
 // get groups of a user
 export async function GET(req: NextRequest) {
 	try {
-		const session = await auth();
-		if (!session?.user?.id) {
+		const userId = req.headers.get('x-user-id') || "";
+		if (!userId) {
 			return NextResponse.json(
 				{ success: false, error: "Unauthorized" },
 				{ status: 401 }
 			);
 		}
-		const userId = session.user.id;
 		const groups = await getGroupsForUser(userId as string);
 		return NextResponse.json(
 			{

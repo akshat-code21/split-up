@@ -1,19 +1,19 @@
 import { getGroupDetails } from "@repo/core";
-import { auth } from "app/(auth)/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-	_req: NextRequest,
-	{ params }: { params: { groupId: string } }
+	req: NextRequest,
+	{ params }: { params: Promise<{ groupId: string }> }
 ) {
 	try {
-		const session = await auth();
-		if (!session?.user?.id) {
-			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+		const userId = req.headers.get('x-user-id') || "";
+		if (!userId) {
+			return NextResponse.json(
+				{ success: false, error: "Unauthorized" },
+				{ status: 401 }
+			);
 		}
-
-		const userId = session.user.id;
-		const groupId = params.groupId;
+		const groupId = (await params).groupId;
 		const groupDetails = await getGroupDetails(
 			groupId as string,
 			userId as string

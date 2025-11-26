@@ -11,29 +11,37 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { GroupResult } from "../pages/GroupPage"
+import type { User } from "@repo/core"
+import axios from "axios"
 
 interface AddExpenseCardProps {
   onCancel?: () => void
-  className?: string
+  onSuccess?: () => void
+  className?: string;
+  groupDetails?: GroupResult;
+  userId?: string
 }
+// TODO : Remove '?' from groupDetails and userId
 
-export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
+export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails,userId }: AddExpenseCardProps) {
   const [amount, setAmount] = React.useState("")
   const [splitType, setSplitType] = React.useState("equal")
   const [splitValues, setSplitValues] = React.useState<Record<string, string>>({})
+  const [selectedParticipants, setSelectedParticipants] = React.useState<string[]>([])
+  const [description, setDescription] = React.useState<string>("");
+  const [payerId, setPayerId] = React.useState<string>(groupDetails?.members[0]?.userId || "");
 
-  const participants = [
-    { id: "you", name: "You" },
-    { id: "aditi", name: "Aditi" },
-    { id: "rohan", name: "Rohan" },
-    { id: "john", name: "John" },
-  ]
-
-  const [selectedParticipants, setSelectedParticipants] = React.useState<string[]>(["you", "aditi"])
 
   React.useEffect(() => {
     setSplitValues({})
   }, [splitType, selectedParticipants])
+
+  React.useEffect(() => {
+    if (groupDetails?.members[0]?.userId) {
+      setPayerId(groupDetails.members[0].userId)
+    }
+  }, [groupDetails])
 
   const toggleParticipant = (id: string) => {
     setSelectedParticipants((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
@@ -71,6 +79,68 @@ export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
   }
 
   const validation = getSplitValidation()
+
+  const calculateParticipants = () => {
+    const totalAmountNum = Number.parseFloat(amount) || 0
+    const participantCount = selectedParticipants.length || 1
+
+    if (splitType === "equal") {
+      const sharePerPerson = totalAmountNum / participantCount
+      return selectedParticipants.map((userId) => ({
+        userId,
+        share: sharePerPerson,
+      }))
+    }
+
+    if (splitType === "custom") {
+      return selectedParticipants.map((userId) => ({
+        userId,
+        share: Number.parseFloat(splitValues[userId] || "0") || 0,
+      }))
+    }
+
+    if (splitType === "percentage") {
+      return selectedParticipants.map((userId) => {
+        const percentage = Number.parseFloat(splitValues[userId] || "0") || 0
+        return {
+          userId,
+          share: (totalAmountNum * percentage) / 100,
+        }
+      })
+    }
+
+    return []
+  }
+
+  const handleSumbit = async () => {
+    if (!payerId || selectedParticipants.length === 0 || !groupDetails?.id || !userId) {
+      return
+    }
+
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupDetails.id}/expenses`, {
+        payerId,
+        amount: Number.parseFloat(amount),
+        description,
+        participants : selectedParticipants,
+      },{
+        headers : {
+          "x-user-id" : userId
+        }
+      })
+      
+      if (res.data.success) {
+        setAmount("")
+        setDescription("")
+        setSelectedParticipants([])
+        setSplitValues({})
+        setPayerId(groupDetails?.members[0]?.userId || "")
+        onSuccess?.() || onCancel?.()
+      }
+    } catch (error) {
+      console.error("Error creating expense:", error)
+    }
+  }
 
   return (
     <Card
@@ -127,6 +197,10 @@ export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
             <Input
               id="description"
               placeholder="e.g. Dinner at Indigo"
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+              }}
               className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 h-11"
             />
           </div>
@@ -134,15 +208,16 @@ export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
           {/* Payer Selector */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Paid By</Label>
-            <Select defaultValue="you">
+            <Select value={payerId} onValueChange={setPayerId}>
               <SelectTrigger className="bg-white/5 border-white/10 focus:ring-primary/20 h-11">
                 <SelectValue placeholder="Select payer" />
               </SelectTrigger>
               <SelectContent className="bg-zinc-950 border-white/10 text-white">
-                <SelectItem value="you">You</SelectItem>
-                <SelectItem value="aditi">Aditi</SelectItem>
-                <SelectItem value="rohan">Rohan</SelectItem>
-                <SelectItem value="john">John</SelectItem>
+                {
+                  groupDetails?.members.map((member: User) => {
+                    return <SelectItem key={member.userId} value={member.userId}>{member.name}</SelectItem>
+                  })
+                }
               </SelectContent>
             </Select>
           </div>
@@ -158,25 +233,25 @@ export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
               </span>
             </Label>
             <div className="grid grid-cols-2 gap-3">
-              {participants.map((person) => (
+              {groupDetails?.members.map((person: User) => (
                 <div
-                  key={person.id}
-                  onClick={() => toggleParticipant(person.id)}
+                  key={person.userId}
+                  onClick={() => toggleParticipant(person.userId)}
                   className={`
                     flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200
-                    ${selectedParticipants.includes(person.id)
+                    ${selectedParticipants.includes(person.userId)
                       ? "bg-primary/10 border-primary/50"
                       : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
                     }
                   `}
                 >
                   <Checkbox
-                    checked={selectedParticipants.includes(person.id)}
-                    onCheckedChange={() => toggleParticipant(person.id)}
+                    checked={selectedParticipants.includes(person.userId)}
+                    onCheckedChange={() => toggleParticipant(person.userId)}
                     className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <span
-                    className={`text-sm ${selectedParticipants.includes(person.id) ? "text-white font-medium" : "text-muted-foreground"}`}
+                    className={`text-sm ${selectedParticipants.includes(person.userId) ? "text-white font-medium" : "text-muted-foreground"}`}
                   >
                     {person.name}
                   </span>
@@ -231,11 +306,11 @@ export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
                     <span>{splitType === "custom" ? "Amount (₹)" : "Percentage (%)"}</span>
                   </div>
 
-                  {participants
-                    .filter((p) => selectedParticipants.includes(p.id))
-                    .map((person) => (
-                      <div key={person.id} className="flex items-center justify-between gap-4">
-                        <span className="text-sm text-white/80">{person.name}</span>
+                  {groupDetails?.members
+                    .filter((p) => selectedParticipants.includes(p.userId))
+                    .map((member: User) => (
+                      <div key={member.userId} className="flex items-center justify-between gap-4">
+                        <span className="text-sm text-white/80">{member.name}</span>
                         <div className="relative w-24">
                           {splitType === "custom" && (
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
@@ -244,8 +319,8 @@ export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
                           )}
                           <Input
                             type="number"
-                            value={splitValues[person.id] || ""}
-                            onChange={(e) => handleSplitValueChange(person.id, e.target.value)}
+                            value={splitValues[member.userId] || ""}
+                            onChange={(e) => handleSplitValueChange(member.userId, e.target.value)}
                             placeholder="0"
                             className={cn(
                               "h-8 text-right bg-black/20 border-white/10 focus:border-primary/50 text-xs",
@@ -282,7 +357,8 @@ export function AddExpenseCard({ onCancel, className }: AddExpenseCardProps) {
         </Button>
         <Button
           className="w-full sm:flex-1 order-1 sm:order-2 bg-primary text-primary-foreground hover:bg-primary/90 border-0"
-          disabled={!validation.isValid && splitType !== "equal"}
+          disabled={(!validation.isValid && splitType !== "equal") || !payerId || selectedParticipants.length === 0 || !amount || !description}
+          onClick={handleSumbit}
         >
           Add Expense
         </Button>

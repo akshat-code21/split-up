@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 interface GroupCardProps {
   id: string
   name: string
-  icon: string
+  icon: string | React.ReactNode
   memberCount: number
   expenseCount: number
   color: string

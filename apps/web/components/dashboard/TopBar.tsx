@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Plus, Bell } from "lucide-react"
+import { Search, Plus, Bell, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
@@ -34,7 +34,7 @@ export function Topbar({ title = "Dashboard" , userName }: { title?: string,user
                     <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
                         <DialogTrigger asChild>
                             <Button className="shadow-[0_0_20px_-5px_rgba(124,58,237,0.5)] bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                                <Plus className="mr-2 h-4 w-4" />
+                                <PlusCircle className="mr-2 h-4 w-4" />
                                 Add Expense
                             </Button>
                         </DialogTrigger>

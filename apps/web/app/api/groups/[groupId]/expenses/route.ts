@@ -9,22 +9,22 @@ import { NextRequest, NextResponse } from "next/server";
 // create an expense
 export async function POST(
 	req: NextRequest,
-	{ params }: { params: { groupId: string } }
+	{ params }: { params: Promise<{ groupId: string }> }
 ) {
 	try {
-		const session = await auth();
-		if (!session?.user?.id) {
+		const userId = req.headers.get('x-user-id') || "";
+		if (!userId) {
 			return NextResponse.json(
 				{ success: false, error: "Unauthorized" },
 				{ status: 401 }
 			);
 		}
-		const requesterId = session.user.id;
+		const requesterId = userId;
 		const rawBody = await req.json();
 		const parsedBody = createExpenseSchema.parse(rawBody);
 		const finalData = {
 			...parsedBody,
-			groupId: params.groupId,
+			groupId: (await params).groupId,
 		};
 		const expense = await createExpense(requesterId as string, finalData);
 		return NextResponse.json(
