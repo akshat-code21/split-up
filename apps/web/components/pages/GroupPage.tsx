@@ -85,7 +85,7 @@ type GroupRes = {
     totalExpenses: number;
 }
 
-// TODO : create and add types of expense and balances
+// TODO: create and add types of expense and balances
 
 export default function GroupPage({ userId, groupId }: { userId: string, groupId: string }) {
     const router = useRouter()

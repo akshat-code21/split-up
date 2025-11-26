@@ -22,7 +22,7 @@ interface AddExpenseCardProps {
   groupDetails?: GroupResult;
   userId?: string
 }
-// TODO : Remove '?' from groupDetails and userId
+// TODO: Remove '?' from groupDetails and userId
 
 export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails,userId }: AddExpenseCardProps) {
   const [amount, setAmount] = React.useState("")
