@@ -4,6 +4,12 @@ on:
   push:
     branches: [ master ]
   workflow_dispatch:
+    inputs:
+      scan_all:
+        description: 'Scan all existing TODOs (not just new ones)'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   issues: write
@@ -15,11 +21,89 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Create issues for TODOs
+      - name: Create issues for new TODOs
+        if: github.event.inputs.scan_all != 'true'
         uses: alstr/todo-to-issue-action@v5
         with:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CLOSE_ISSUES: true
           AUTO_ASSIGN: false
+
+      - name: Scan all existing TODOs
+        if: github.event.inputs.scan_all == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { execSync } = require('child_process');
+            
+            // Find all TODO comments
+            const todoPattern = /\/\/\s*TODO[:\s]*(.+)/gi;
+            const files = execSync('find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \\) ! -path "*/node_modules/*" ! -path "*/.next/*" ! -path "*/dist/*"', { encoding: 'utf-8' })
+              .trim()
+              .split('\n')
+              .filter(Boolean);
+            
+            const todos = [];
+            
+            for (const file of files) {
+              try {
+                const content = fs.readFileSync(file, 'utf-8');
+                const lines = content.split('\n');
+                
+                lines.forEach((line, index) => {
+                  const match = line.match(todoPattern);
+                  if (match) {
+                    todos.push({
+                      file: file.replace(/^\.\//, ''),
+                      line: index + 1,
+                      message: match[0].replace(/\/\/\s*TODO[:\s]*/i, '').trim(),
+                      fullLine: line.trim()
+                    });
+                  }
+                });
+              } catch (error) {
+                console.log(`Error reading ${file}:`, error.message);
+              }
+            }
+            
+            console.log(`Found ${todos.length} TODO comments`);
+            
+            // Get existing issues
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              labels: 'todo'
+            });
+            
+            const existingTitles = new Set(existingIssues.map(issue => issue.title));
+            
+            // Create issues for TODOs that don't have issues yet
+            for (const todo of todos) {
+              const title = `TODO: ${todo.message}`;
+              const body = `**File:** \`${todo.file}\`\n**Line:** ${todo.line}\n\n\`\`\`\n${todo.fullLine}\n\`\`\`\n\nThis TODO was found in the codebase.`;
+              
+              if (!existingTitles.has(title)) {
+                try {
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title,
+                    body: body,
+                    labels: ['todo']
+                  });
+                  console.log(`Created issue for: ${title}`);
+                } catch (error) {
+                  console.error(`Error creating issue for ${title}:`, error.message);
+                }
+              } else {
+                console.log(`Issue already exists for: ${title}`);
+              }
+            }
           
