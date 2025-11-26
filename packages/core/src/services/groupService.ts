@@ -143,7 +143,7 @@ export type GroupDetailsOutput = {
 	id: string;
 	name: string;
 	members: Array<User>;
-	// TODO: Create and Add type of Expenses
+	// TODO: Create and Add type for Expenses
 	expenses: Array<any>;
 	totalExpenses: number;
 };
