@@ -24,8 +24,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Debug workflow inputs
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Scan all value: '${{ github.event.inputs.scan_all }}'"
+          echo "Scan all type: $(echo '${{ github.event.inputs.scan_all }}' | jq -r 'type' 2>/dev/null || echo 'not json')"
+          echo "Will run scan_all step: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.scan_all != 'false') }}"
+
       - name: Create issues for new TODOs
-        if: github.event_name == 'push' || github.event.inputs.scan_all == 'false'
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.scan_all == 'false')
         uses: alstr/todo-to-issue-action@v5
         with:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,7 +40,7 @@ jobs:
           AUTO_ASSIGN: false
 
       - name: Scan all existing TODOs
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.scan_all != 'false'
+        if: github.event_name == 'workflow_dispatch' && (github.event.inputs.scan_all != 'false')
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
