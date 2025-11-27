@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+
+// TODO: clean up not needed schemas
+
 export const emailSchema = z
   .email("Invalid email format")
   .min(1, "Email is required");
@@ -10,7 +13,6 @@ export const idSchema = z
 
 export const sendInviteSchema = z.object({
   email: emailSchema,
-  groupId: idSchema,
 });
 
 export type SendInviteSchema = z.infer<typeof sendInviteSchema>;
@@ -49,11 +51,6 @@ export const inviteDetailsSchema = z.object({
 
 export type InviteDetailsSchema = z.infer<typeof inviteDetailsSchema>;
 
-export const groupIdSchema = z.object({
-  groupId: idSchema,
-});
-
-export type GroupIdSchema = z.infer<typeof groupIdSchema>;
 
 export const currentUserEmailSchema = z.object({
   email: emailSchema,

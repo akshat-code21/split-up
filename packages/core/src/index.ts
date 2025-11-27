@@ -6,6 +6,8 @@ export * from "./validations/expenseSchemas";
 export * from "./validations/groupSchemas";
 export * from "./ledger/calculateBalance";
 export * from "./validations/settlementSchemas";
+export * from "./services/inviteService";
+export * from "./validations/inviteSchemas"
 
 export const checkForUser = async (userId: string): Promise<Boolean> => {
 	const user = await client.user.findUnique({
