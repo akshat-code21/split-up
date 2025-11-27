@@ -11,6 +11,7 @@ import {
 	type NotFoundError,
 } from "..";
 import type { InviteStatus } from "../../../db/generated/prisma/enums";
+import { emailService } from "./email/service";
 
 export type SendInviteInput = {
 	groupId: string;
@@ -63,6 +64,26 @@ export const sendGroupInvite = async (
 				groupId: data.groupId,
 				inviterId: inviterId,
 			},
+		});
+
+		const inviter = await client.user.findUnique({ where: { id: inviterId } });
+		if (!inviter) {
+			return { message: "User doesn't exist", success: false };
+		}
+
+		const group = await client.group.findUnique({
+			where: { id: data.groupId },
+		});
+
+		if (!group) {
+			return { message: "Group doesn't exist", success: false };
+		}
+
+		await emailService.sendInviteEmail({
+			to: data.email,
+			inviteId: invite.id,
+			inviterName: inviter.name!,
+			groupName: group.name,
 		});
 
 		return {

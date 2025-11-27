@@ -9,6 +9,9 @@ export * from "./validations/settlementSchemas";
 export * from "./services/inviteService";
 export * from "./validations/inviteSchemas"
 
+
+// TODO: Create an API Wrapper for all services (except email)
+
 export const checkForUser = async (userId: string): Promise<Boolean> => {
 	const user = await client.user.findUnique({
 		where: {

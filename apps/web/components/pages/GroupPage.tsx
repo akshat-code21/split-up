@@ -176,7 +176,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div>
-                                    <Dialog>
+                                    <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
                                         <DialogTrigger asChild>
                                             <Button variant="outline" size="icon" className="border-white/10 hover:bg-secondary/50 bg-transparent">
                                                 <UserPlus className="h-4 w-4" />
