@@ -15,6 +15,9 @@ import axios from "axios"
 import type { User } from "@repo/core"
 import { AvatarImage } from "@radix-ui/react-avatar"
 import { AddExpenseCard } from "../dashboard/AddExpenseCard"
+import { InviteMemberCard } from "../dashboard/InviteMemberCard"
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip"
+
 
 // Mock data - replace with actual API call
 const mockGroupData: Record<string, any> = {
@@ -91,6 +94,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
     const router = useRouter()
     const [group, setGroup] = useState<GroupResult | null>(null);
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState<boolean>(false);
+    const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
 
     const normalizeGroup = (group: GroupRes) => {
         const newGroup = {
@@ -169,29 +173,40 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button variant="outline" size="icon" className="border-white/10 hover:bg-secondary/50 bg-transparent">
-                                    <UserPlus className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-[#09090b] border-white/10 sm:max-w-md p-6">
-                                <VisuallyHidden>
-                                    <DialogTitle>Add Member</DialogTitle>
-                                    <DialogDescription>Add a new participant to this group.</DialogDescription>
-                                </VisuallyHidden>
-                                <AddMemberCard />
-                            </DialogContent>
-                        </Dialog>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div>
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" size="icon" className="border-white/10 hover:bg-secondary/50 bg-transparent">
+                                                <UserPlus className="h-4 w-4" />
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="p-0 border-zinc-800 bg-[#09090b] sm:max-w-md overflow-hidden">
+                                            <VisuallyHidden>
+                                                <DialogTitle>Add Member</DialogTitle>
+                                                <DialogDescription>Add a new participant to this group.</DialogDescription>
+                                            </VisuallyHidden>
+                                            <InviteMemberCard
+                                            className="border-0 shadow-none" groupName={group.name} groupId={group.id} userId={userId} 
+                                            onCancel={() => setIsAddMemberOpen(false)}/>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="text-wrap max-w-md">
+                                <p className="text-wrap">Add a Member by inviting them</p>
+                            </TooltipContent>
+                        </Tooltip>
                         <Button variant="outline" size="icon" className="border-white/10 hover:bg-secondary/50 bg-transparent">
                             <Settings className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
-            </FadeIn>
+            </FadeIn >
 
             {/* Summary Cards */}
-            <FadeIn delay={0.1}>
+            < FadeIn delay={0.1} >
                 <div className="grid gap-4 md:grid-cols-3">
                     <Card className="border-white/10 bg-card/40 backdrop-blur-sm">
                         <CardHeader className="pb-3">
@@ -223,7 +238,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                         </CardHeader>
                     </Card>
                 </div>
-            </FadeIn>
+            </FadeIn >
 
             <div className="grid gap-6 lg:grid-cols-3">
                 {/* Recent Expenses */}
@@ -246,9 +261,9 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                     <DialogContent className="p-0 border-zinc-800 bg-[#09090b] sm:max-w-md overflow-hidden">
                                         <DialogTitle className="sr-only">Add Expense</DialogTitle>
                                         <DialogDescription className="sr-only">Fill out the form to add a new expense.</DialogDescription>
-                                        <AddExpenseCard 
-                                            userId={userId} 
-                                            groupDetails={group} 
+                                        <AddExpenseCard
+                                            userId={userId}
+                                            groupDetails={group}
                                             onCancel={() => setIsAddExpenseOpen(false)}
                                             onSuccess={() => {
                                                 setIsAddExpenseOpen(false)
@@ -267,7 +282,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                                 }
                                                 getGroupDetails()
                                             }}
-                                            className="border-0 shadow-none" 
+                                            className="border-0 shadow-none"
                                         />
                                     </DialogContent>
                                 </Dialog>
@@ -363,6 +378,6 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                     </FadeIn>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }

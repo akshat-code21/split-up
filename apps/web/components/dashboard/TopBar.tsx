@@ -1,14 +1,16 @@
 "use client"
 
-import { Search, Plus, Bell, PlusCircle } from "lucide-react"
+import { Search, Plus, Bell, PlusCircle, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { AddExpenseCard } from "@/components/dashboard/AddExpenseCard"
+import { InviteMemberCard } from "./InviteMemberCard"
+import axios from "axios"
 
 
-export function Topbar({ title = "Dashboard" , userName }: { title?: string,userName?:string }) {
+export function Topbar({ title = "Dashboard", userName }: { title?: string, userName?: string }) {
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false)
     return (
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-border/50 bg-background/50 backdrop-blur-xl px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
@@ -42,6 +44,15 @@ export function Topbar({ title = "Dashboard" , userName }: { title?: string,user
                             <DialogTitle className="sr-only">Add Expense</DialogTitle>
                             <DialogDescription className="sr-only">Fill out the form to add a new expense.</DialogDescription>
                             <AddExpenseCard onCancel={() => setIsAddExpenseOpen(false)} className="border-0 shadow-none " />
+                            {/* <InviteMemberCard
+                                groupId="test-group-123"
+                                groupName="Weekend Trip"
+                                className="border-0 shadow-none "
+                                onInvite={async () => {
+                                    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${}`);
+                                }}
+                                onCancel={() => setIsAddExpenseOpen(false)}
+                            /> */}
                         </DialogContent>
                     </Dialog>
                 </div>
