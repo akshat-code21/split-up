@@ -29,6 +29,7 @@ model User {
   groupMembers  GroupMember[]
   expensesPaid  Expense[]            @relation("PayerExpenses")
   expenseShares ExpenseParticipant[]
+  invites       Invite[]
 }
 
 model Account {
@@ -136,9 +137,31 @@ model Group {
   expenses  Expense[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  invites   Invite[]
 }
 
 enum ExpenseType {
   NORMAL // normal expense
   SETTLEMENT // A paid B (manual payment)
+}
+
+model Invite {
+  id        String       @id @default(uuid())
+  email     String       
+  groupId   String
+  inviterId String
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+  group     Group        @relation(fields: [groupId], references: [id])
+  inviter   User         @relation(fields: [inviterId], references: [id])
+
+  @@unique([groupId, email])
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
 }

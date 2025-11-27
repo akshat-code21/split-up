@@ -74,7 +74,7 @@ export function Sidebar({ userImageUrl, userName, userEmail }: { userImageUrl: s
             size="sm"
             className="w-full justify-center text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10 bg-transparent"
             onClick={() => {
-              signOut({redirectTo: "/" });
+              signOut({ redirectTo: "/" });
             }}
           >
             <LogOut className="mr-2 h-3.5 w-3.5" />
