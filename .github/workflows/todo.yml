@@ -127,12 +127,10 @@ jobs:
             });
 
             for (const issue of issues) {
-              if (issue.title.startsWith('TODO:')) {
-                await github.rest.issues.addLabels({
+              await github.rest.issues.addLabels({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue.number,
                   labels: ['todo']
                 });
-              }
             }
