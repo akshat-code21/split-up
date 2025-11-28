@@ -69,11 +69,17 @@ export const checkForInvite = async (inviteId: string) => {
 const EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const checkForInviteExpiry = async (inviteId: string) => {
-	const invite = await client.invite.findUnique({ where: { id: inviteId } });
-	if (!invite) return false;
-	return Date.now() - invite.createdAt.getTime() > EXPIRY_MS;
-};
+  const invite = await client.invite.findUnique({
+    where: { id: inviteId },
+  });
 
+  if (!invite) return false;
+
+  const created = invite.createdAt.getTime();
+  const now = Date.now();
+
+  return now - created > EXPIRY_MS;
+};
 export const inviteUserCheck = async (inviteId: string, userId: string) => {
 	const invite = await client.invite.findUnique({ where: { id: inviteId } });
 	const user = await client.user.findUnique({ where: { id: userId } });
@@ -89,6 +95,7 @@ export const inviteStatusCheck = async (inviteId: string) => {
 export type NotFoundError = {
 	message?: string;
 	success: boolean;
+	errorCode?:number
 };
 
 export enum InviteStatus {

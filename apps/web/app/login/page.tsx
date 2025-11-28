@@ -5,7 +5,8 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { GoogleAuthButton } from "@/components/GoogleAuthButton"
 import { ScaleIn } from "@repo/ui/motion"
 
-export default function LoginPage() {
+export default function LoginPage({searchParams}:{ searchParams: { callbackUrl?: string } }) {
+    const callbackUrl = searchParams?.callbackUrl || "/dashboard"
     return (
         <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#0a0a0a] selection:bg-primary/20">
             {/* Background Effects */}
@@ -44,7 +45,7 @@ export default function LoginPage() {
                             <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
                         </CardHeader>
                         <CardContent className="grid gap-4 px-4">
-                            <GoogleAuthButton text="Sign in with Google" />
+                            <GoogleAuthButton text="Sign in with Google" callbackUrl={callbackUrl} />
                             <div className="relative">
                                 <div className="absolute inset-0 flex items-center">
                                     <span className="w-full border-t border-border/50" />

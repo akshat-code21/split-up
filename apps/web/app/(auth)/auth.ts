@@ -30,6 +30,37 @@ const result = NextAuth({
 			// Logged in users are authenticated, otherwise redirect to login page
 			return !!auth;
 		},
+		async redirect({ url, baseUrl }) {
+            // If url is the baseUrl or login page, check for callbackUrl in the URL
+            if (url === baseUrl || url === `${baseUrl}/login`) {
+                // Try to extract callbackUrl from the URL if it exists
+                try {
+                    const urlObj = new URL(url);
+                    const callbackUrl = urlObj.searchParams.get("callbackUrl");
+                    if (callbackUrl) {
+                        // Decode and return the callbackUrl
+                        const decoded = decodeURIComponent(callbackUrl);
+                        if (decoded.startsWith("/")) {
+                            return `${baseUrl}${decoded}`;
+                        }
+                        if (decoded.startsWith(baseUrl)) {
+                            return decoded;
+                        }
+                    }
+                } catch (e) {
+                    // Fall through to default behavior
+                }
+            }
+            
+            // Allow returning to callbackUrl
+            if (url.startsWith(baseUrl)) return url;
+            
+            // Allow relative callbackUrls like /invite?token=...
+            if (url.startsWith("/")) return `${baseUrl}${url}`;
+
+            // Reject unsafe external URLs
+            return baseUrl;
+        },
 	},
 	pages: {
 		signIn: "/login",

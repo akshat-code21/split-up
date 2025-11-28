@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils"
 import { signIn } from "@/app/(auth)/auth"
 
 interface GoogleAuthButtonProps extends React.ComponentProps<typeof Button> {
-  text?: string
+  text?: string;
+  callbackUrl?: string
 }
 
-export function GoogleAuthButton({ className, text = "Continue with Google", ...props }: GoogleAuthButtonProps) {
+export function GoogleAuthButton({ className, text = "Continue with Google", callbackUrl, ...props }: GoogleAuthButtonProps) {
   return (
     <Button
       variant="outline"
@@ -17,12 +18,12 @@ export function GoogleAuthButton({ className, text = "Continue with Google", ...
         className,
       )}
       {...props}
-      onClick={async() => {
+      onClick={async () => {
         "use server"
         await signIn("google",
-            {
-                redirectTo : "/dashboard"
-            }
+          {
+            callbackUrl: callbackUrl || "/dashboard"
+          }
         )
       }}
     >

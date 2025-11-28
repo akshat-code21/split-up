@@ -187,6 +187,7 @@ export type InviteDetailOutput = {
 	inviterName: string;
 	status: InviteStatus;
 	invitedAt: Date;
+	inviterAvatar: string;
 };
 
 export const getInviteDetails = async (
@@ -198,6 +199,7 @@ export const getInviteDetails = async (
 			return {
 				message: "Invite doesn't exist",
 				success: false,
+                errorCode : 404
 			};
 		}
 		const inviteExpiryCheck = await checkForInviteExpiry(inviteId);
@@ -205,8 +207,11 @@ export const getInviteDetails = async (
 			return {
 				message: "Invite expired",
 				success: false,
+				errorCode: 419,
 			};
 		}
+
+        // TODO: Invite already claimed check missing !
 		const invite = await client.invite.findUnique({
 			where: {
 				id: inviteId,
@@ -220,6 +225,7 @@ export const getInviteDetails = async (
 			return {
 				message: "Invite doesn't exist",
 				success: false,
+                errorCode : 404
 			};
 		}
 		return {
@@ -229,6 +235,7 @@ export const getInviteDetails = async (
 			inviterName: invite.inviter.name ?? "Unknown",
 			status: invite.status,
 			invitedAt: invite.createdAt,
+			inviterAvatar: invite.inviter.image ?? "",
 		};
 	} catch (error) {
 		return {
