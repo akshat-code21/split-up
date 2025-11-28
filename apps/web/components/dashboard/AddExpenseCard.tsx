@@ -127,14 +127,7 @@ export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails, u
         headers: {
           "x-user-id": userId
         }
-      })
-
-      console.log("data being sent : " + {
-        payerId,
-        amount: Number.parseFloat(amount),
-        description,
-        participants : calculateParticipants(),
-      });
+      })  
 
       if (res.data.success) {
         setAmount("")

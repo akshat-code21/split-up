@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import { FadeIn } from "@repo/ui/motion"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
@@ -92,7 +93,7 @@ type Payer = {
     updatedAt: string
 }
 
-type Expense = {
+export type Expense = {
     id: string
     groupId: string;
     payer: Payer;
@@ -104,9 +105,9 @@ type Expense = {
 }
 
 type Balance = {
-    name : string;
-    userId : string
-    numberBalance : number;
+    name: string;
+    userId: string
+    numberBalance: number;
 }
 
 // TODO: create and add types of expense and balances
@@ -114,6 +115,7 @@ type Balance = {
 export default function GroupPage({ userId, groupId }: { userId: string, groupId: string }) {
     const router = useRouter()
     const [group, setGroup] = useState<GroupResult | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState<boolean>(false);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
     const [pendingMembers, setPendingMembers] = useState<PendingMembers[]>([]);
@@ -132,22 +134,32 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
     useEffect(() => {
         if (!userId || !groupId) {
             console.log("Missing userId or groupId:", { userId, groupId })
+            setIsLoading(false)
             return
         }
         const getGroupDetails = async () => {
+            setIsLoading(true)
             try {
                 const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupId}`, {
                     headers: {
                         "x-user-id": userId
                     }
                 })
-                setGroup(normalizeGroup(res.data.groupDetails));
+                const groupData = res.data.groupDetails;
+                if (!groupData || !groupData.id) {
+                    setGroup(null);
+                } else {
+                    setGroup(normalizeGroup(groupData));
+                }
             } catch (error) {
                 console.error("Error fetching group details:", error)
                 if (axios.isAxiosError(error)) {
                     console.error("Response:", error.response?.data)
                     console.error("Status:", error.response?.status)
                 }
+                setGroup(null)
+            } finally {
+                setIsLoading(false)
             }
         }
         getGroupDetails()
@@ -180,6 +192,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
     useEffect(() => {
         if (!groupId) {
             console.log("Missing userId or groupId:", { userId, groupId })
+            setBalances([])
             return
         }
         const getBalances = async () => {
@@ -189,20 +202,21 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                         "x-user-id": userId
                     }
                 })
-                setBalances(res.data.balances)
+                setBalances(res.data.balances || [])
             } catch (error) {
-                console.error("Error fetching pending members:", error)
+                console.error("Error fetching balances:", error)
                 if (axios.isAxiosError(error)) {
                     console.error("Response:", error.response?.data)
                     console.error("Status:", error.response?.status)
                 }
+                setBalances([])
             }
         }
         getBalances()
     }, [groupId])
 
-    const others = balances.filter((b: User) => b.userId !== userId);
-    const uiBalances = others.map((o:Balance) => {
+    const others = Array.isArray(balances) ? balances.filter((b: User) => b.userId !== userId) : [];
+    const uiBalances = others.map((o: Balance) => {
         if (o.numberBalance < 0) {
             return {
                 name: o.name,
@@ -217,6 +231,117 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
             }
         }
     })
+
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                {/* Header Skeleton */}
+                <div className="flex items-center gap-4 mb-6">
+                    <Skeleton className="h-10 w-10 rounded" />
+                    <div className="flex-1">
+                        <div className="flex items-center gap-4">
+                            <Skeleton className="h-16 w-16 rounded-full" />
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-8 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <Skeleton className="h-10 w-10 rounded" />
+                        <Skeleton className="h-10 w-10 rounded" />
+                    </div>
+                </div>
+
+                {/* Summary Cards Skeleton */}
+                <div className="grid gap-4 md:grid-cols-3">
+                    {[1, 2, 3].map((i) => (
+                        <Card key={i} className="border-white/10 bg-card/40 backdrop-blur-sm">
+                            <CardHeader className="pb-3">
+                                <Skeleton className="h-4 w-24 mb-2" />
+                                <Skeleton className="h-9 w-16" />
+                            </CardHeader>
+                        </Card>
+                    ))}
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-3">
+                    {/* Recent Expenses Skeleton */}
+                    <Card className="border-white/10 bg-card/40 backdrop-blur-sm lg:col-span-2">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <Skeleton className="h-6 w-32 mb-1" />
+                                    <Skeleton className="h-4 w-40" />
+                                </div>
+                                <Skeleton className="h-10 w-28" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i}>
+                                        {i > 1 && <div className="h-px bg-white/10 my-2"></div>}
+                                        <div className="flex items-start justify-between py-3">
+                                            <div className="space-y-2 flex-1">
+                                                <Skeleton className="h-5 w-3/4" />
+                                                <Skeleton className="h-4 w-1/2" />
+                                            </div>
+                                            <div className="text-right space-y-1">
+                                                <Skeleton className="h-6 w-20" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Members & Balances Skeleton */}
+                    <div className="space-y-6">
+                        {/* Members List Skeleton */}
+                        <Card className="border-white/10 bg-card/40 backdrop-blur-sm">
+                            <CardHeader>
+                                <Skeleton className="h-6 w-20 mb-1" />
+                                <Skeleton className="h-4 w-28" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="flex items-center gap-3">
+                                            <Skeleton className="h-10 w-10 rounded-full" />
+                                            <div className="flex-1 space-y-2">
+                                                <Skeleton className="h-4 w-24" />
+                                                <Skeleton className="h-3 w-32" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Balances Skeleton */}
+                        <Card className="border-white/10 bg-card/40 backdrop-blur-sm">
+                            <CardHeader>
+                                <Skeleton className="h-6 w-20 mb-1" />
+                                <Skeleton className="h-4 w-24" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="flex justify-between py-2">
+                                            <Skeleton className="h-4 w-28" />
+                                            <Skeleton className="h-4 w-16" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     if (!group) {
         return (
@@ -247,11 +372,11 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                     </Button>
                     <div className="flex-1">
                         <div className="flex items-center gap-4">
-                            <Avatar className={`h-16 w-16 bg-gradient-to-br ${group.color}`}>
+                            <Avatar className={`h-16 w-16 bg-gradient-to-br ${group.color || "from-blue-500 to-cyan-500"}`}>
                                 <AvatarFallback className="text-3xl bg-transparent">{group.icon}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                                <h1 className="font-heading text-3xl font-bold tracking-tight">{group.name}</h1>
+                                <h1 className="font-heading text-3xl font-bold tracking-tight">{group.name || "Unnamed Group"}</h1>
                                 <p className="text-muted-foreground mt-1">{group.description || ""}</p>
                             </div>
                         </div>
@@ -272,7 +397,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                                 <DialogDescription>Add a new participant to this group.</DialogDescription>
                                             </VisuallyHidden>
                                             <InviteMemberCard
-                                                className="border-0 shadow-none" groupName={group.name} groupId={group.id} userId={userId}
+                                                className="border-0 shadow-none" groupName={group.name || "Unnamed Group"} groupId={group.id || ""} userId={userId}
                                                 onCancel={() => setIsAddMemberOpen(false)} />
                                         </DialogContent>
                                     </Dialog>
@@ -298,7 +423,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                 <Receipt className="h-4 w-4" />
                                 Total Spent
                             </CardDescription>
-                            <CardTitle className="font-heading text-3xl">₹{group.totalExpenses.toLocaleString()}</CardTitle>
+                            <CardTitle className="font-heading text-3xl">₹{(group.totalExpenses || 0).toLocaleString()}</CardTitle>
                         </CardHeader>
                     </Card>
 
@@ -308,7 +433,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                 <Users className="h-4 w-4" />
                                 Members
                             </CardDescription>
-                            <CardTitle className="font-heading text-3xl">{group.members.length}</CardTitle>
+                            <CardTitle className="font-heading text-3xl">{(group.members || []).length}</CardTitle>
                         </CardHeader>
                     </Card>
 
@@ -318,7 +443,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                 <TrendingUp className="h-4 w-4" />
                                 Expenses
                             </CardDescription>
-                            <CardTitle className="font-heading text-3xl">{group.expenses.length}</CardTitle>
+                            <CardTitle className="font-heading text-3xl">{(group.expenses || []).length}</CardTitle>
                         </CardHeader>
                     </Card>
                 </div>
@@ -361,7 +486,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                                         })
                                                         setGroup(normalizeGroup(res.data.groupDetails));
                                                     } catch (error) {
-                                                        console.error("Error fetching group details:", error)
+                                                        console.error("Error fetching balances:", error)
                                                     }
                                                 }
                                                 getGroupDetails()
@@ -374,7 +499,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {group.expenses.map((expense: Expense, index: number) => (
+                                {(group.expenses || []).map((expense: Expense, index: number) => (
                                     <div key={expense.id}>
                                         {index > 0 && <Separator className="bg-white/10" />}
                                         <div className="flex items-start justify-between py-3">
@@ -414,7 +539,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
-                                    {group.members.map((member: any) => (
+                                    {(group.members || []).map((member: any) => (
                                         <div key={member.name} className="flex items-center gap-3">
                                             <Avatar className="h-10 w-10 bg-gradient-to-br from-primary/20 to-primary/10">
                                                 <AvatarImage src={`${member.image}`} alt="User" />
@@ -452,7 +577,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
-                                    {uiBalances.map((item:any) => (
+                                    {uiBalances.map((item: any) => (
                                         <div key={item.name} className="flex justify-between py-2">
                                             <span>
                                                 <span className="font-medium">{item.name}</span>{" "}
