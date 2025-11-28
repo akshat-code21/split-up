@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Receipt, IndianRupee } from "lucide-react"
+import { Receipt, IndianRupee, Loader2 } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -31,6 +31,7 @@ export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails, u
   const [selectedParticipants, setSelectedParticipants] = React.useState<string[]>([])
   const [description, setDescription] = React.useState<string>("");
   const [payerId, setPayerId] = React.useState<string>(groupDetails?.members[0]?.userId || "");
+  const [isAddingExpense,setIsAddingExpense] = React.useState<boolean>(false);
 
 
   React.useEffect(() => {
@@ -116,8 +117,9 @@ export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails, u
     if (!payerId || selectedParticipants.length === 0 || !groupDetails?.id || !userId) {
       return
     }
-
+    
     try {
+      setIsAddingExpense(true)
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupDetails.id}/expenses`, {
         payerId,
         amount: Number.parseFloat(amount),
@@ -139,6 +141,9 @@ export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails, u
       }
     } catch (error) {
       console.error("Error creating expense:", error)
+      setIsAddingExpense(false)
+    }finally{
+      setIsAddingExpense(false)
     }
   }
 
@@ -357,10 +362,16 @@ export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails, u
         </Button>
         <Button
           className="w-full sm:flex-1 order-1 sm:order-2 bg-primary text-primary-foreground hover:bg-primary/90 border-0"
-          disabled={(!validation.isValid && splitType !== "equal") || !payerId || selectedParticipants.length === 0 || !amount || !description}
+          disabled={(!validation.isValid && splitType !== "equal") || !payerId || selectedParticipants.length === 0 || !amount || !description || isAddingExpense}
           onClick={handleSumbit}
         >
-          Add Expense
+          {isAddingExpense ? (
+            <span className="flex flex-row items-center gap-2">
+              <Loader2 className="animate-spin" /> Adding Expense
+            </span>
+          ) : (
+            "Add Expense"
+          )}
         </Button>
       </CardFooter>
     </Card>

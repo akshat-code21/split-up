@@ -30,7 +30,7 @@ export function Sidebar({ userImageUrl, userName, userEmail }: { userImageUrl: s
         </div>
         <div className="flex-grow flex flex-col gap-1 px-3">
           {navigation.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || item.href.includes(pathname)
             return (
               <Link
                 key={item.name}

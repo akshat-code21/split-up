@@ -6,17 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
 import { FadeIn } from "@repo/ui/motion"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-import { useEffect, useState } from "react"
-import axios from "axios"
+import { useState } from "react"
 import type { InviteStatus, User } from "@repo/core"
 import { AvatarImage } from "@radix-ui/react-avatar"
 import { AddExpenseCard } from "../dashboard/AddExpenseCard"
 import { InviteMemberCard } from "../dashboard/InviteMemberCard"
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import groupApi from "@/apiClient/group"
+import GroupSkeleton from "./GroupSkeleton"
 
 const formatDateHumanReadable = (date: Date): string => {
     const today = new Date()
@@ -67,6 +68,7 @@ type GroupRes = {
     expenses: Expense[];
     members: User[];
     totalExpenses: number;
+    description?: string;
 }
 
 type PendingMembers = {
@@ -113,13 +115,27 @@ type Balance = {
 // TODO: create and add types of expense and balances
 
 export default function GroupPage({ userId, groupId }: { userId: string, groupId: string }) {
+    const queryClient = useQueryClient();
     const router = useRouter()
-    const [group, setGroup] = useState<GroupResult | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState<boolean>(false);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
-    const [pendingMembers, setPendingMembers] = useState<PendingMembers[]>([]);
-    const [balances, setBalances] = useState<any>([]);
+    const { data: groupData, isLoading: groupLoading, error: groupError } = useQuery({
+        queryKey: ['group', groupId],
+        queryFn: () => groupApi.getGroupDetails(groupId, userId),
+        enabled: !!groupId && !!userId,
+    })
+
+    const { data: pendingMembers = [], isLoading: pendingMembersLoading, error: pendingMembersError } = useQuery({
+        queryKey: ['pendingMembers', groupId],
+        queryFn: () => groupApi.getPendingMembers(groupId, userId),
+        enabled: !!groupId && !!userId,
+    })
+
+    const { data: balances = [], isLoading: balancesLoading, error: balancesError } = useQuery({
+        queryKey: ['balances', groupId],
+        queryFn: () => groupApi.getBalances(groupId, userId),
+        enabled: !!groupId && !!userId,
+    })
 
     const normalizeGroup = (group: GroupRes) => {
         const newGroup = {
@@ -131,90 +147,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
         return newGroup;
     }
 
-    useEffect(() => {
-        if (!userId || !groupId) {
-            console.log("Missing userId or groupId:", { userId, groupId })
-            setIsLoading(false)
-            return
-        }
-        const getGroupDetails = async () => {
-            setIsLoading(true)
-            try {
-                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupId}`, {
-                    headers: {
-                        "x-user-id": userId
-                    }
-                })
-                const groupData = res.data.groupDetails;
-                if (!groupData || !groupData.id) {
-                    setGroup(null);
-                } else {
-                    setGroup(normalizeGroup(groupData));
-                }
-            } catch (error) {
-                console.error("Error fetching group details:", error)
-                if (axios.isAxiosError(error)) {
-                    console.error("Response:", error.response?.data)
-                    console.error("Status:", error.response?.status)
-                }
-                setGroup(null)
-            } finally {
-                setIsLoading(false)
-            }
-        }
-        getGroupDetails()
-    }, [userId, groupId])
-
-    useEffect(() => {
-        if (!groupId) {
-            console.log("Missing userId or groupId:", { userId, groupId })
-            return
-        }
-        const getPendingMembers = async () => {
-            try {
-                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupId}/invites`, {
-                    headers: {
-                        "x-user-id": userId
-                    }
-                })
-                setPendingMembers(res.data.data)
-            } catch (error) {
-                console.error("Error fetching pending members:", error)
-                if (axios.isAxiosError(error)) {
-                    console.error("Response:", error.response?.data)
-                    console.error("Status:", error.response?.status)
-                }
-            }
-        }
-        getPendingMembers()
-    }, [groupId])
-
-    useEffect(() => {
-        if (!groupId) {
-            console.log("Missing userId or groupId:", { userId, groupId })
-            setBalances([])
-            return
-        }
-        const getBalances = async () => {
-            try {
-                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupId}/balances`, {
-                    headers: {
-                        "x-user-id": userId
-                    }
-                })
-                setBalances(res.data.balances || [])
-            } catch (error) {
-                console.error("Error fetching balances:", error)
-                if (axios.isAxiosError(error)) {
-                    console.error("Response:", error.response?.data)
-                    console.error("Status:", error.response?.status)
-                }
-                setBalances([])
-            }
-        }
-        getBalances()
-    }, [groupId])
-
+    const group = groupData ? normalizeGroup(groupData) : null;
     const others = Array.isArray(balances) ? balances.filter((b: User) => b.userId !== userId) : [];
     const uiBalances = others.map((o: Balance) => {
         if (o.numberBalance < 0) {
@@ -232,118 +165,9 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
         }
     })
 
-    if (isLoading) {
-        return (
-            <div className="space-y-6">
-                {/* Header Skeleton */}
-                <div className="flex items-center gap-4 mb-6">
-                    <Skeleton className="h-10 w-10 rounded" />
-                    <div className="flex-1">
-                        <div className="flex items-center gap-4">
-                            <Skeleton className="h-16 w-16 rounded-full" />
-                            <div className="flex-1 space-y-2">
-                                <Skeleton className="h-8 w-3/4" />
-                                <Skeleton className="h-4 w-1/2" />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <Skeleton className="h-10 w-10 rounded" />
-                        <Skeleton className="h-10 w-10 rounded" />
-                    </div>
-                </div>
+    if (groupLoading) return <GroupSkeleton />
 
-                {/* Summary Cards Skeleton */}
-                <div className="grid gap-4 md:grid-cols-3">
-                    {[1, 2, 3].map((i) => (
-                        <Card key={i} className="border-white/10 bg-card/40 backdrop-blur-sm">
-                            <CardHeader className="pb-3">
-                                <Skeleton className="h-4 w-24 mb-2" />
-                                <Skeleton className="h-9 w-16" />
-                            </CardHeader>
-                        </Card>
-                    ))}
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-3">
-                    {/* Recent Expenses Skeleton */}
-                    <Card className="border-white/10 bg-card/40 backdrop-blur-sm lg:col-span-2">
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Skeleton className="h-6 w-32 mb-1" />
-                                    <Skeleton className="h-4 w-40" />
-                                </div>
-                                <Skeleton className="h-10 w-28" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i}>
-                                        {i > 1 && <div className="h-px bg-white/10 my-2"></div>}
-                                        <div className="flex items-start justify-between py-3">
-                                            <div className="space-y-2 flex-1">
-                                                <Skeleton className="h-5 w-3/4" />
-                                                <Skeleton className="h-4 w-1/2" />
-                                            </div>
-                                            <div className="text-right space-y-1">
-                                                <Skeleton className="h-6 w-20" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Members & Balances Skeleton */}
-                    <div className="space-y-6">
-                        {/* Members List Skeleton */}
-                        <Card className="border-white/10 bg-card/40 backdrop-blur-sm">
-                            <CardHeader>
-                                <Skeleton className="h-6 w-20 mb-1" />
-                                <Skeleton className="h-4 w-28" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3">
-                                    {[1, 2, 3].map((i) => (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <Skeleton className="h-10 w-10 rounded-full" />
-                                            <div className="flex-1 space-y-2">
-                                                <Skeleton className="h-4 w-24" />
-                                                <Skeleton className="h-3 w-32" />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Balances Skeleton */}
-                        <Card className="border-white/10 bg-card/40 backdrop-blur-sm">
-                            <CardHeader>
-                                <Skeleton className="h-6 w-20 mb-1" />
-                                <Skeleton className="h-4 w-24" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3">
-                                    {[1, 2, 3].map((i) => (
-                                        <div key={i} className="flex justify-between py-2">
-                                            <Skeleton className="h-4 w-28" />
-                                            <Skeleton className="h-4 w-16" />
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    if (!group) {
+    if (groupError || !group) {
         return (
             <div className="flex items-center justify-center h-[50vh]">
                 <Card className="border-white/10 bg-card/40 backdrop-blur-sm max-w-md">
@@ -356,6 +180,10 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
             </div>
         )
     }
+
+    console.log('Group Data:', groupData);
+    console.log('Normalized Group:', group);
+    console.log('Group Loading:', groupLoading);
 
     return (
         <div className="space-y-6">
@@ -476,20 +304,9 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                             onCancel={() => setIsAddExpenseOpen(false)}
                                             onSuccess={() => {
                                                 setIsAddExpenseOpen(false)
-                                                // Refresh group data
-                                                const getGroupDetails = async () => {
-                                                    try {
-                                                        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupId}`, {
-                                                            headers: {
-                                                                "x-user-id": userId
-                                                            }
-                                                        })
-                                                        setGroup(normalizeGroup(res.data.groupDetails));
-                                                    } catch (error) {
-                                                        console.error("Error fetching balances:", error)
-                                                    }
-                                                }
-                                                getGroupDetails()
+                                                queryClient.invalidateQueries({ queryKey: ['group', groupId] })
+                                                queryClient.invalidateQueries({ queryKey: ['pendingMembers', groupId] })
+                                                queryClient.invalidateQueries({ queryKey: ['balances', groupId] })
                                             }}
                                             className="border-0 shadow-none"
                                         />
