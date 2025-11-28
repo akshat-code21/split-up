@@ -24,7 +24,7 @@ interface AddExpenseCardProps {
 }
 // TODO: Remove '?' from groupDetails and userId
 
-export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails,userId }: AddExpenseCardProps) {
+export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails, userId }: AddExpenseCardProps) {
   const [amount, setAmount] = React.useState("")
   const [splitType, setSplitType] = React.useState("equal")
   const [splitValues, setSplitValues] = React.useState<Record<string, string>>({})
@@ -122,13 +122,20 @@ export function AddExpenseCard({ onCancel, onSuccess, className, groupDetails,us
         payerId,
         amount: Number.parseFloat(amount),
         description,
-        participants : selectedParticipants,
-      },{
-        headers : {
-          "x-user-id" : userId
+        participants: calculateParticipants(),
+      }, {
+        headers: {
+          "x-user-id": userId
         }
       })
-      
+
+      console.log("data being sent : " + {
+        payerId,
+        amount: Number.parseFloat(amount),
+        description,
+        participants : calculateParticipants(),
+      });
+
       if (res.data.success) {
         setAmount("")
         setDescription("")

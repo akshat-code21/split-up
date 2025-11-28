@@ -1,5 +1,5 @@
 "use client"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { ArrowLeft, Settings, UserPlus, PlusCircle, Users, Receipt, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,64 +9,44 @@ import { Separator } from "@/components/ui/separator"
 import { FadeIn } from "@repo/ui/motion"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-import AddMemberCard from "@/components/dashboard/AddMemberCard"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import type { User } from "@repo/core"
+import type { InviteStatus, User } from "@repo/core"
 import { AvatarImage } from "@radix-ui/react-avatar"
 import { AddExpenseCard } from "../dashboard/AddExpenseCard"
 import { InviteMemberCard } from "../dashboard/InviteMemberCard"
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip"
 
+const formatDateHumanReadable = (date: Date): string => {
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
 
-// Mock data - replace with actual API call
-const mockGroupData: Record<string, any> = {
-    "1": {
-        id: "1",
-        name: "Weekend Trip",
-        icon: "🏖️",
-        description: "Our amazing beach vacation expenses",
-        color: "from-blue-500 to-cyan-500",
-        members: [
-            { id: "1", name: "You", email: "you@example.com", avatar: "👤" },
-            { id: "2", name: "Rohan", email: "rohan@example.com", avatar: "R" },
-            { id: "3", name: "Aditi", email: "aditi@example.com", avatar: "A" },
-            { id: "4", name: "Vikram", email: "vikram@example.com", avatar: "V" },
-        ],
-        expenses: [
-            {
-                id: "1",
-                description: "Hotel Booking",
-                amount: 12000,
-                paidBy: "You",
-                date: "Today, 3:30 PM",
-                splitBetween: 4,
-            },
-            {
-                id: "2",
-                description: "Dinner at Beach Shack",
-                amount: 2400,
-                paidBy: "Rohan",
-                date: "Yesterday, 8:45 PM",
-                splitBetween: 4,
-            },
-            {
-                id: "3",
-                description: "Scuba Diving",
-                amount: 8000,
-                paidBy: "You",
-                date: "Oct 24, 2023",
-                splitBetween: 3,
-            },
-        ],
-        balances: [
-            { name: "Rohan", amount: 2400, type: "owes" },
-            { name: "Aditi", amount: 5000, type: "owes" },
-            { name: "Vikram", amount: 3000, type: "owed" },
-        ],
-    },
+    let hours = date.getHours()
+    let minutes: string | number = date.getMinutes();
+    let ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    let strTime = hours + ':' + minutes + ' ' + ampm;
+
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate())
+
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+        return `Today, ${strTime}`
+    } else if (dateOnly.getTime() === yesterdayOnly.getTime()) {
+        return `Yesterday, ${strTime}`
+    }
+
+    const daysAgo = Math.floor((todayOnly.getTime() - dateOnly.getTime()) / (1000 * 60 * 60 * 24))
+    if (daysAgo > 0 && daysAgo < 7) {
+        return `${daysAgo} day${daysAgo > 1 ? 's' : ''} ago, ${strTime}`
+    }
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined, hour12: true })
 }
-
 
 export type GroupResult = {
     id: string;
@@ -75,17 +55,58 @@ export type GroupResult = {
     description?: string;
     color?: string;
     members: User[];
-    expenses: any[];
-    balances: any[];
+    expenses: Expense[];
+    balances: Balance[];
     totalExpenses: number
 }
 
 type GroupRes = {
     id: string;
     name: string;
-    expenses: any[];
+    expenses: Expense[];
     members: User[];
     totalExpenses: number;
+}
+
+type PendingMembers = {
+    email: string,
+    inviteId: string;
+    invitedAt: Date;
+    status: InviteStatus
+}
+
+type Participant = {
+    id: string;
+    expenseId: string;
+    userId: string;
+    share: number
+}
+
+type Payer = {
+    id: string;
+    name: string;
+    email: string;
+    emailVerified?: string | null;
+    image: string;
+    createdAt: Date;
+    updatedAt: string
+}
+
+type Expense = {
+    id: string
+    groupId: string;
+    payer: Payer;
+    amount: number;
+    description: string
+    type: "NORMAL" | "SETTLEMENT"
+    date: Date
+    participants: Participant[]
+}
+
+type Balance = {
+    name : string;
+    userId : string
+    numberBalance : number;
 }
 
 // TODO: create and add types of expense and balances
@@ -95,16 +116,15 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
     const [group, setGroup] = useState<GroupResult | null>(null);
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState<boolean>(false);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
+    const [pendingMembers, setPendingMembers] = useState<PendingMembers[]>([]);
+    const [balances, setBalances] = useState<any>([]);
 
     const normalizeGroup = (group: GroupRes) => {
         const newGroup = {
             ...group,
             icon: <Receipt className="size-8" />,
-            description: "XYZ",
             color: "from-blue-500 to-cyan-500",
-            balances: [{ name: "Rohan", amount: 2400, type: "owes" },
-            { name: "Aditi", amount: 5000, type: "owes" },
-            { name: "Vikram", amount: 3000, type: "owed" }]
+            balances: []
         }
         return newGroup;
     }
@@ -121,7 +141,6 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                         "x-user-id": userId
                     }
                 })
-                console.log(res.data.groupDetails);
                 setGroup(normalizeGroup(res.data.groupDetails));
             } catch (error) {
                 console.error("Error fetching group details:", error)
@@ -133,6 +152,71 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
         }
         getGroupDetails()
     }, [userId, groupId])
+
+    useEffect(() => {
+        if (!groupId) {
+            console.log("Missing userId or groupId:", { userId, groupId })
+            return
+        }
+        const getPendingMembers = async () => {
+            try {
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupId}/invites`, {
+                    headers: {
+                        "x-user-id": userId
+                    }
+                })
+                setPendingMembers(res.data.data)
+            } catch (error) {
+                console.error("Error fetching pending members:", error)
+                if (axios.isAxiosError(error)) {
+                    console.error("Response:", error.response?.data)
+                    console.error("Status:", error.response?.status)
+                }
+            }
+        }
+        getPendingMembers()
+    }, [groupId])
+
+    useEffect(() => {
+        if (!groupId) {
+            console.log("Missing userId or groupId:", { userId, groupId })
+            return
+        }
+        const getBalances = async () => {
+            try {
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups/${groupId}/balances`, {
+                    headers: {
+                        "x-user-id": userId
+                    }
+                })
+                setBalances(res.data.balances)
+            } catch (error) {
+                console.error("Error fetching pending members:", error)
+                if (axios.isAxiosError(error)) {
+                    console.error("Response:", error.response?.data)
+                    console.error("Status:", error.response?.status)
+                }
+            }
+        }
+        getBalances()
+    }, [groupId])
+
+    const others = balances.filter((b: User) => b.userId !== userId);
+    const uiBalances = others.map((o:Balance) => {
+        if (o.numberBalance < 0) {
+            return {
+                name: o.name,
+                amount: Math.abs(o.numberBalance),
+                direction: "owes-you"
+            }
+        } else {
+            return {
+                name: o.name,
+                amount: o.numberBalance,
+                direction: "you-owe"
+            }
+        }
+    })
 
     if (!group) {
         return (
@@ -188,8 +272,8 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                                 <DialogDescription>Add a new participant to this group.</DialogDescription>
                                             </VisuallyHidden>
                                             <InviteMemberCard
-                                            className="border-0 shadow-none" groupName={group.name} groupId={group.id} userId={userId} 
-                                            onCancel={() => setIsAddMemberOpen(false)}/>
+                                                className="border-0 shadow-none" groupName={group.name} groupId={group.id} userId={userId}
+                                                onCancel={() => setIsAddMemberOpen(false)} />
                                         </DialogContent>
                                     </Dialog>
                                 </div>
@@ -290,7 +374,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {group.expenses.map((expense: any, index: number) => (
+                                {group.expenses.map((expense: Expense, index: number) => (
                                     <div key={expense.id}>
                                         {index > 0 && <Separator className="bg-white/10" />}
                                         <div className="flex items-start justify-between py-3">
@@ -298,17 +382,17 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                                 <div className="flex items-center gap-2">
                                                     <h4 className="font-medium">{expense.description}</h4>
                                                     <Badge variant="secondary" className="text-xs">
-                                                        Split {expense.splitBetween} ways
+                                                        Split {expense?.participants?.length} ways
                                                     </Badge>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground">
-                                                    Paid by <span className="text-foreground font-medium">{expense.paidBy}</span> • {expense.date}
+                                                    Paid by <span className="text-foreground font-medium">{expense.payer.name}</span> • {formatDateHumanReadable(new Date(expense.date))}
                                                 </p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="font-heading text-xl font-semibold">₹{expense.amount.toLocaleString()}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    ₹{(expense.amount / expense.splitBetween).toFixed(2)} each
+                                                    {/* ₹{(expense.amount / expense.splitBetween).toFixed(2)} each */}
                                                 </p>
                                             </div>
                                         </div>
@@ -342,6 +426,18 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                             </div>
                                         </div>
                                     ))}
+                                    {pendingMembers && pendingMembers.length > 0 && pendingMembers.map((member: PendingMembers) => {
+                                        return <div key={member.email} className="flex items-center gap-3">
+                                            <Avatar className="h-10 w-10 bg-gradient-to-br from-primary/20 to-primary/10">
+                                                <AvatarImage src={`placeholder.svg`} alt="User" />
+                                                <AvatarFallback>{"U"}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-sm truncate flex flex-row gap-2">{"New User"} <span className="text-yellow-500">(Invited)</span></p>
+                                                <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                                            </div>
+                                        </div>
+                                    })}
                                 </div>
                             </CardContent>
                         </Card>
@@ -356,20 +452,18 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
-                                    {group.balances.map((balance: any, index: number) => (
-                                        <div key={index} className="flex items-center justify-between">
-                                            <p className="text-sm">
-                                                <span className="font-medium">{balance.name}</span>
-                                                <span className="text-muted-foreground mx-1">
-                                                    {balance.type === "owes" ? "owes you" : "you owe"}
-                                                </span>
-                                            </p>
-                                            <p
-                                                className={`font-heading text-lg font-semibold ${balance.type === "owes" ? "text-green-500" : "text-orange-500"
-                                                    }`}
+                                    {uiBalances.map((item:any) => (
+                                        <div key={item.name} className="flex justify-between py-2">
+                                            <span>
+                                                <span className="font-medium">{item.name}</span>{" "}
+                                                {item.direction === "owes-you" ? "owes you" : "you owe"}
+                                            </span>
+
+                                            <span
+                                                className={item.direction === "owes-you" ? "text-green-500" : "text-orange-500"}
                                             >
-                                                ₹{balance.amount.toLocaleString()}
-                                            </p>
+                                                ₹{item.amount.toLocaleString()}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>

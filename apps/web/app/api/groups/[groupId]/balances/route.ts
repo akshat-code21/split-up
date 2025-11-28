@@ -4,22 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 // compute and return ledger
 export async function GET(
-	_req: NextRequest,
-	{
-		params,
-	}: {
-		params: { groupId: string };
-	}
+	req: NextRequest,
+	{ params }: { params: Promise<{ groupId: string }> }
 ) {
 	try {
-		const { groupId } = params;
-		const session = await auth();
-		if (!session || !session.user) {
-			return NextResponse.json({
-				message: "User not found",
-			});
+		const userId = req.headers.get('x-user-id') || "";
+		if (!userId) {
+			return NextResponse.json(
+				{ success: false, error: "Unauthorized" },
+				{ status: 401 }
+			);
 		}
-		const userId = session.user.id;
+		const groupId = (await params).groupId;
 		const balances = await calculateBalance(groupId as string);
 		return NextResponse.json({
 			balances,

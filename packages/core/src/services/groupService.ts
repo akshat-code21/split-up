@@ -41,6 +41,8 @@ export const createGroup = async (
 export type GetGroupsOutput = {
 	id: string;
 	name: string;
+	memberCount : number
+	expenseCount : number
 };
 
 export const getGroupsForUser = async (
@@ -61,10 +63,16 @@ export const getGroupsForUser = async (
 				},
 			},
 		},
+		include : {
+			members : true,
+			expenses : true
+		}
 	});
 	return groups.map((group) => ({
 		id: group.id,
 		name: group.name,
+		memberCount : group.members.length,
+		expenseCount : group.expenses.length
 	}));
 };
 
@@ -146,6 +154,7 @@ export type GroupDetailsOutput = {
 	// TODO: Create and Add type for Expenses
 	expenses: Array<any>;
 	totalExpenses: number;
+	description : string
 };
 
 export const getGroupDetails = async (
@@ -171,7 +180,8 @@ export const getGroupDetails = async (
 			},
 			expenses: {
 				include : {
-					participants : true
+					participants : true,
+					payer : true
 				}
 			},
 		},
@@ -196,6 +206,7 @@ export const getGroupDetails = async (
 	return {
 		id: group.id,
 		name: group.name,
+		description : group.description || "",
 		members: group.members.map((member) => ({
 			userId : member.user.id,
 			name: member.user.name,
