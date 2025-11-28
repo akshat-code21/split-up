@@ -40,7 +40,7 @@ const balances = [
 
 export function GroupBalances() {
   return (
-    <Card className="glass-card h-full">
+    <Card className="glass-card h-full !w-full">
       <CardHeader>
         <CardTitle className="font-heading text-lg">Balances</CardTitle>
         <CardDescription>Who owes you and who you owe</CardDescription>
