@@ -92,6 +92,11 @@ export const inviteStatusCheck = async (inviteId: string) => {
 	return invite?.status === "PENDING";
 };
 
+export const checkForInviteAccepted = async(inviteId:string) => {
+	const invite = await client.invite.findUnique({where : {id : inviteId}});
+	return invite?.status === "ACCEPTED"
+}
+
 export type NotFoundError = {
 	message?: string;
 	success: boolean;

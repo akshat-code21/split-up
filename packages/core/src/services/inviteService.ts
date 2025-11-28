@@ -2,6 +2,7 @@ import { client } from "@repo/db";
 import {
 	checkForGroup,
 	checkForInvite,
+	checkForInviteAccepted,
 	checkForInviteExpiry,
 	checkForMember,
 	checkForUser,
@@ -212,6 +213,16 @@ export const getInviteDetails = async (
 		}
 
         // TODO: Invite already claimed check missing !
+
+        const inviteAcceptedCheck = await checkForInviteAccepted(inviteId);
+        if (inviteAcceptedCheck) {
+			return {
+				message: "Invite expired",
+				success: false,
+				errorCode: 419,
+			};
+		}
+
 		const invite = await client.invite.findUnique({
 			where: {
 				id: inviteId,
