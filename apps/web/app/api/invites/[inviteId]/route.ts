@@ -9,29 +9,30 @@ export async function GET(
 	try {
 		const inviteId = (await params).inviteId;
 		const result = await getInviteDetails(inviteId);
-        // TODO: solve this type issue !
-        // @ts-ignore
-		if (result && result.errorCode === 419) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: "Invite has expired",
-					inviteExpired: true,
-				},
-				{ status: 419 }
-			);
+
+		if (!result.success) {
+			if (result.errorCode === 419) {
+				return NextResponse.json(
+					{
+						success: false,
+						message: "Invite has expired",
+						inviteExpired: true,
+					},
+					{ status: 419 }
+				);
+			}
+			if (result.errorCode === 404) {
+				return NextResponse.json(
+					{
+						success: false,
+						message: "Invite doesn't exist",
+						inviteExpired: true,
+					},
+					{ status: 404 }
+				);
+			}
 		}
-        // @ts-ignore
-		if (result && result.errorCode === 404) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: "Invite doesn't exist",
-					inviteExpired: true,
-				},
-				{ status: 404 }
-			);
-		}
+
 		return NextResponse.json(
 			{
 				success: true,

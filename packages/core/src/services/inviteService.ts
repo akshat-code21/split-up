@@ -182,6 +182,7 @@ export const getPendingInvitesForUser = async (
 };
 
 export type InviteDetailOutput = {
+	success: true;
 	email: string;
 	groupId: string;
 	groupName: string;
@@ -191,16 +192,22 @@ export type InviteDetailOutput = {
 	inviterAvatar: string;
 };
 
+export type InviteDetailError = {
+	success: false;
+	message: string;
+	errorCode: number;
+};
+
 export const getInviteDetails = async (
 	inviteId: string
-): Promise<InviteDetailOutput | NotFoundError> => {
+): Promise<InviteDetailOutput | InviteDetailError> => {
 	try {
 		const inviteExists = await checkForInvite(inviteId);
 		if (!inviteExists) {
 			return {
 				message: "Invite doesn't exist",
 				success: false,
-                errorCode : 404
+				errorCode: 404,
 			};
 		}
 		const inviteExpiryCheck = await checkForInviteExpiry(inviteId);
@@ -236,10 +243,11 @@ export const getInviteDetails = async (
 			return {
 				message: "Invite doesn't exist",
 				success: false,
-                errorCode : 404
+				errorCode: 404,
 			};
 		}
 		return {
+			success: true,
 			email: invite.email,
 			groupId: invite.groupId,
 			groupName: invite.group.name,
@@ -252,6 +260,7 @@ export const getInviteDetails = async (
 		return {
 			message: "An error occurred while getting invite details",
 			success: false,
+			errorCode: 500,
 		};
 	}
 };
