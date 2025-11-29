@@ -26,6 +26,7 @@ const mockExpenses = [
     splitBetween: 4,
     yourShare: 3000,
     status: "lent" as const,
+    splitMethod: "equal" as const,
   },
   {
     id: "2",
@@ -39,6 +40,7 @@ const mockExpenses = [
     splitBetween: 4,
     yourShare: 600,
     status: "borrowed" as const,
+    splitMethod: "equal" as const,
   },
   {
     id: "3",
@@ -52,6 +54,7 @@ const mockExpenses = [
     splitBetween: 3,
     yourShare: 2666.67,
     status: "lent" as const,
+    splitMethod: "equal" as const,
   },
   {
     id: "4",
@@ -65,6 +68,7 @@ const mockExpenses = [
     splitBetween: 4,
     yourShare: 300,
     status: "borrowed" as const,
+    splitMethod: "equal" as const,
   },
   {
     id: "5",
@@ -78,6 +82,7 @@ const mockExpenses = [
     splitBetween: 4,
     yourShare: 875,
     status: "lent" as const,
+    splitMethod: "custom" as const,
   },
 ]
 
@@ -86,6 +91,7 @@ export default function ExpensesPage() {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false)
   const [dateFilter, setDateFilter] = useState("all")
   const [sortFilter, setSortFilter] = useState("newest")
+  const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null)
 
   // Filter and sort expenses based on user selection
   const filteredExpenses = mockExpenses
@@ -95,6 +101,10 @@ export default function ExpensesPage() {
       if (sortFilter === "highest") return b.amount - a.amount
       return 1 // newest first (default)
     })
+
+  const handleToggleExpense = (expenseId: string) => {
+    setExpandedExpenseId(expandedExpenseId === expenseId ? null : expenseId)
+  }
 
   return (
     <div className="space-y-6">
@@ -117,6 +127,23 @@ export default function ExpensesPage() {
                 className="pl-9 w-64 bg-secondary/30 border-white/10 focus:border-primary/50"
               />
             </div>
+
+            {/* Add Expense Button */}
+            <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Expense
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-[#09090b] border-white/10 sm:max-w-md p-0">
+                <VisuallyHidden>
+                  <DialogTitle>Add Expense</DialogTitle>
+                  <DialogDescription>Record a new expense for any group.</DialogDescription>
+                </VisuallyHidden>
+                <AddExpenseCard onCancel={() => setIsAddExpenseOpen(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </FadeIn>
@@ -136,7 +163,11 @@ export default function ExpensesPage() {
         <FadeInStagger className="space-y-3">
           {filteredExpenses.map((expense) => (
             <FadeInItem key={expense.id}>
-              <ExpenseItem expense={expense} />
+              <ExpenseItem
+                expense={expense}
+                isExpanded={expandedExpenseId === expense.id}
+                onToggle={() => handleToggleExpense(expense.id)}
+              />
             </FadeInItem>
           ))}
         </FadeInStagger>
