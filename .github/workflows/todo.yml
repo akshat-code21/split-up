@@ -36,7 +36,7 @@ jobs:
         uses: alstr/todo-to-issue-action@v5
         with:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CLOSE_ISSUES: true
+          CLOSE_ISSUES: false
           AUTO_ASSIGN: false
 
       - name: Scan all existing TODOs
