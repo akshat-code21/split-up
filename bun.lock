@@ -6,12 +6,10 @@
       "dependencies": {
         "@next-auth/prisma-adapter": "^1.0.7",
         "@prisma/client": "^7.0.0",
-        "@tanstack/react-query": "^5.90.11",
         "framer-motion": "^12.23.24",
         "prisma": "^7.0.0",
       },
       "devDependencies": {
-        "@tanstack/eslint-plugin-query": "^5.91.2",
         "@types/node": "^24.10.1",
         "prettier": "^3.6.0",
         "prettier-plugin-tailwindcss": "^0.7.1",
@@ -72,7 +70,6 @@
     "packages/core": {
       "name": "@repo/core",
       "dependencies": {
-        "dotenv": "^17.2.3",
         "resend": "^6.5.2",
         "zod": "^4.1.12",
       },

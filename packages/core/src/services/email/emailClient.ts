@@ -1,10 +1,6 @@
 import { Resend } from "resend";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-// TODO: variables from .env not working
-const resend = new Resend(`re_EJJrfkSn_N2zEZDf7VK3fPj1p85V67Edc`);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendEmailFromResend = async ({
 	to,

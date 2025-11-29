@@ -16,9 +16,10 @@ interface InviteMemberCardProps {
     className?: string
     groupId?: string
     userId?: string
+    onSuccess?: () => void
 }
 
-export function InviteMemberCard({ onCancel, onInvite , groupName = "this group", className, groupId, userId }: InviteMemberCardProps) {
+export function InviteMemberCard({ onCancel, onInvite, onSuccess, groupName = "this group", className, groupId, userId }: InviteMemberCardProps) {
     const [email, setEmail] = React.useState("")
     const [isLoading, setIsLoading] = React.useState(false)
     const [error, setError] = React.useState<string | null>(null)
@@ -64,6 +65,7 @@ export function InviteMemberCard({ onCancel, onInvite , groupName = "this group"
             }
 
             setSuccess(true)
+            onSuccess?.()
             setTimeout(() => {
                 setSuccess(false)
                 setEmail("")

@@ -226,7 +226,12 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                             </VisuallyHidden>
                                             <InviteMemberCard
                                                 className="border-0 shadow-none" groupName={group.name || "Unnamed Group"} groupId={group.id || ""} userId={userId}
-                                                onCancel={() => setIsAddMemberOpen(false)} />
+                                                onCancel={() => setIsAddMemberOpen(false)}
+                                                onSuccess={() => {
+                                                    queryClient.invalidateQueries({ queryKey: ['group', groupId] })
+                                                    queryClient.invalidateQueries({ queryKey: ['pendingMembers', groupId] })
+                                                    queryClient.invalidateQueries({ queryKey: ['balances', groupId] })
+                                                }} />
                                         </DialogContent>
                                     </Dialog>
                                 </div>
@@ -402,7 +407,7 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
                                             </span>
 
                                             <span
-                                                className={item.direction === "owes-you" ? "text-green-500" : "text-orange-500"}
+                                                className={item.amount !== 0 ? item.direction === "owes-you" ? "text-green-500" : "text-orange-500" : "text-white"}
                                             >
                                                 ₹{item.amount.toLocaleString()}
                                             </span>
