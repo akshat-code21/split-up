@@ -87,7 +87,7 @@ const mockExpenses = [
     },
 ]
 
-export default function ExpensesPage({ userId, expenses }: { userId: string, expenses: AllExpensesListItem }) {
+export default function ExpensesPage({ userId, expenses }: { userId: string, expenses: AllExpensesListItem[] }) {
     const [searchQuery, setSearchQuery] = useState("")
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false)
     const [dateFilter, setDateFilter] = useState("all")
@@ -96,13 +96,13 @@ export default function ExpensesPage({ userId, expenses }: { userId: string, exp
     console.log(expenses);
 
     // Filter and sort expenses based on user selection
-    const filteredExpenses = mockExpenses
-        .filter((expense) => expense.description.toLowerCase().includes(searchQuery.toLowerCase()))
-        .sort((a, b) => {
-            if (sortFilter === "oldest") return -1
-            if (sortFilter === "highest") return b.amount - a.amount
-            return 1 // newest first (default)
-        })
+    // const filteredExpenses = expenses
+    //     .filter((expense) => expense.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    //     .sort((a, b) => {
+    //         if (sortFilter === "oldest") return -1
+    //         if (sortFilter === "highest") return b.amount - a.amount
+    //         return 1 // newest first (default)
+    //     })
 
     const handleToggleExpense = (expenseId: string) => {
         setExpandedExpenseId(expandedExpenseId === expenseId ? null : expenseId)
@@ -161,11 +161,12 @@ export default function ExpensesPage({ userId, expenses }: { userId: string, exp
             </FadeIn>
 
             {/* Expenses List */}
-            {filteredExpenses.length > 0 ? (
+            {expenses.length > 0 ? (
                 <FadeInStagger className="space-y-3">
-                    {filteredExpenses.map((expense) => (
+                    {expenses.map((expense) => (
                         <FadeInItem key={expense.id}>
                             <ExpenseItem
+                            // @ts-ignore
                                 expense={expense}
                                 isExpanded={expandedExpenseId === expense.id}
                                 onToggle={() => handleToggleExpense(expense.id)}

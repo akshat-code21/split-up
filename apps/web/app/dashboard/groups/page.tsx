@@ -3,13 +3,18 @@ import { headers } from "next/headers";
 import axios from "axios";
 
 export default async function Groups() {
-  const getGroupsForUser = async(userId: string) => {
-    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups`, {
-      headers: {
-        'x-user-id': userId,
-      },
-    })
-    return res.data.data;
+  const getGroupsForUser = async (userId: string) => {
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/groups`, {
+        headers: {
+          'x-user-id': userId,
+        },
+      })
+      return res.data.data;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
   }
   const headerList = await headers();
   const userId = headerList.get('x-user-id') || "";

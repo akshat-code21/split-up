@@ -6,7 +6,8 @@ import {
 	type NotFoundError,
 } from "..";
 import type { User } from "./groupService";
-import type { Expense } from "../../../db/generated/prisma/client";
+import type { Expense, GroupMember } from "../../../db/generated/prisma/client";
+import type { GroupMemberCreateInput } from "../../../db/generated/prisma/models";
 export type ExpenseParticipantInput = {
 	userId: string;
 	share: number;
@@ -209,25 +210,24 @@ export const getExpensesForGroup = async (
 	}));
 };
 
-
-
 export type ExpenseGroup = {
-	id : string;
-	name : string;
-	description : string | null;
-	currency : string;
-	createdAt : Date;
-	updatedAt : Date;
-	expenses : Expense[]
-}
+	id: string;
+	name: string;
+	description: string | null;
+	currency: string;
+	createdAt: Date;
+	updatedAt: Date;
+	expenses: Expense[];
+	members: Array<GroupMember & { user: User }>;
+};
 
 export type AllExpensesListItem = {
 	id: string;
-	userId:string;
-	groupId : string;
-	role:string;
-	joinedAt : Date;
-	group : ExpenseGroup;
+	userId: string;
+	groupId: string;
+	role: string;
+	joinedAt: Date;
+	group: ExpenseGroup;
 };
 
 export const getAllExpensesForUser = async (
@@ -241,16 +241,35 @@ export const getAllExpensesForUser = async (
 		};
 	}
 	const allExpenses = await client.groupMember.findMany({
-		where : {
-			userId
+		where: {
+			userId,
 		},
-		include : {
-			group : {
-				include : {
-					expenses : true
-				}
-			}
-		}
-	})
-	return allExpenses
+		include: {
+			group: {
+				include: {
+					expenses: true,
+					members: {
+						include: {
+							user: true,
+						},
+					},
+				},
+			},
+		},
+	});
+	return allExpenses.map((item) => ({
+		...item,
+		group: {
+			...item.group,
+			members: item.group.members.map((member) => ({
+				...member,
+				user: {
+					userId: member.user.id,
+					name: member.user.name,
+					email: member.user.email,
+					image: member.user.image,
+				},
+			})),
+		},
+	}));
 };
