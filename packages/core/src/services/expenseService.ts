@@ -1,6 +1,12 @@
 import { client } from "@repo/db";
-import { checkForUser, checkForMember, checkPayerIsMember,type NotFoundError } from "..";
+import {
+	checkForUser,
+	checkForMember,
+	checkPayerIsMember,
+	type NotFoundError,
+} from "..";
 import type { User } from "./groupService";
+import type { Expense } from "../../../db/generated/prisma/client";
 export type ExpenseParticipantInput = {
 	userId: string;
 	share: number;
@@ -23,8 +29,6 @@ export type CreateExpenseOutput = {
 	description: string;
 	date: Date;
 };
-
-
 
 export const createExpense = async (
 	requesterId: string,
@@ -203,4 +207,50 @@ export const getExpensesForGroup = async (
 			share: participant.share,
 		})),
 	}));
+};
+
+
+
+export type ExpenseGroup = {
+	id : string;
+	name : string;
+	description : string | null;
+	currency : string;
+	createdAt : Date;
+	updatedAt : Date;
+	expenses : Expense[]
+}
+
+export type AllExpensesListItem = {
+	id: string;
+	userId:string;
+	groupId : string;
+	role:string;
+	joinedAt : Date;
+	group : ExpenseGroup;
+};
+
+export const getAllExpensesForUser = async (
+	userId: string
+): Promise<AllExpensesListItem[] | NotFoundError> => {
+	const userExists = await checkForUser(userId);
+	if (!userExists) {
+		return {
+			message: "User doesn't exist",
+			success: false,
+		};
+	}
+	const allExpenses = await client.groupMember.findMany({
+		where : {
+			userId
+		},
+		include : {
+			group : {
+				include : {
+					expenses : true
+				}
+			}
+		}
+	})
+	return allExpenses
 };
