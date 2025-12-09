@@ -13,79 +13,8 @@ import { ExpenseItem } from "@/components/dashboard/ExpenseItem"
 import { ExpensesFilterBar } from "@/components/dashboard/ExpensesFilterBar"
 import { AllExpensesForUser } from "@repo/core"
 
-// Mock data - replace with actual API call
-const mockExpenses = [
-    {
-        id: "1",
-        description: "Hotel Booking",
-        amount: 12000,
-        paidBy: "You",
-        paidById: "you",
-        date: "Today, 3:30 PM",
-        category: "accommodation",
-        groupName: "Weekend Trip",
-        splitBetween: 4,
-        yourShare: 3000,
-        status: "lent" as const,
-        splitMethod: "equal" as const,
-    },
-    {
-        id: "2",
-        description: "Dinner at Beach Shack",
-        amount: 2400,
-        paidBy: "Rohan",
-        paidById: "rohan",
-        date: "Yesterday, 8:45 PM",
-        category: "food",
-        groupName: "Weekend Trip",
-        splitBetween: 4,
-        yourShare: 600,
-        status: "borrowed" as const,
-        splitMethod: "equal" as const,
-    },
-    {
-        id: "3",
-        description: "Scuba Diving Adventure",
-        amount: 8000,
-        paidBy: "You",
-        paidById: "you",
-        date: "Jan 22, 2025",
-        category: "entertainment",
-        groupName: "Goa Trip",
-        splitBetween: 3,
-        yourShare: 2666.67,
-        status: "lent" as const,
-        splitMethod: "equal" as const,
-    },
-    {
-        id: "4",
-        description: "Taxi to Airport",
-        amount: 1200,
-        paidBy: "Aditi",
-        paidById: "aditi",
-        date: "Jan 20, 2025",
-        category: "transport",
-        groupName: "Goa Trip",
-        splitBetween: 4,
-        yourShare: 300,
-        status: "borrowed" as const,
-        splitMethod: "equal" as const,
-    },
-    {
-        id: "5",
-        description: "Groceries for BBQ",
-        amount: 3500,
-        paidBy: "You",
-        paidById: "you",
-        date: "Jan 18, 2025",
-        category: "food",
-        groupName: "Home Expenses",
-        splitBetween: 4,
-        yourShare: 875,
-        status: "lent" as const,
-        splitMethod: "custom" as const,
-    },
-]
+
+// TODO: filters + search and edit + delete functionality using tanstack query
 
 export default function ExpensesPage({ userId, expensesData }: { userId: string, expensesData: AllExpensesForUser[] }) {
     const [searchQuery, setSearchQuery] = useState("")
@@ -130,7 +59,7 @@ export default function ExpensesPage({ userId, expensesData }: { userId: string,
                         </div>
 
                         {/* Add Expense Button */}
-                        <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+                        {/* <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
                             <DialogTrigger asChild>
                                 <Button className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
                                     <PlusCircle className="mr-2 h-4 w-4" />
@@ -144,7 +73,7 @@ export default function ExpensesPage({ userId, expensesData }: { userId: string,
                                 </VisuallyHidden>
                                 <AddExpenseCard onCancel={() => setIsAddExpenseOpen(false)} />
                             </DialogContent>
-                        </Dialog>
+                        </Dialog> */}
                     </div>
                 </div>
             </FadeIn>
@@ -165,7 +94,6 @@ export default function ExpensesPage({ userId, expensesData }: { userId: string,
                     {expensesData.map((expense) => (
                         <FadeInItem key={expense.id}>
                             <ExpenseItem
-                            // @ts-ignore
                                 expense={expense}
                                 isExpanded={expandedExpenseId === expense.id}
                                 onToggle={() => handleToggleExpense(expense.id)}
