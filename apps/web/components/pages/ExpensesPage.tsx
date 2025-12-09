@@ -14,7 +14,7 @@ import { ExpensesFilterBar } from "@/components/dashboard/ExpensesFilterBar"
 import { AllExpensesForUser } from "@repo/core"
 
 
-// TODO: filters + search and edit + delete functionality using tanstack query
+// TODO: filters + search & edit + delete functionality using tanstack query
 
 export default function ExpensesPage({ userId, expensesData }: { userId: string, expensesData: AllExpensesForUser[] }) {
     const [searchQuery, setSearchQuery] = useState("")
