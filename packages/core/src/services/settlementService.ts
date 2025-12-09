@@ -63,3 +63,8 @@ export const createSettlement = async (
 	});
 	return { expenseId: expense.id };
 };
+
+
+export const getAllSettlements = async() => {
+
+}
