@@ -11,7 +11,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { AddExpenseCard } from "@/components/dashboard/AddExpenseCard"
 import { ExpenseItem } from "@/components/dashboard/ExpenseItem"
 import { ExpensesFilterBar } from "@/components/dashboard/ExpensesFilterBar"
-import { AllExpensesListItem } from "@repo/core"
+import { AllExpensesForUser } from "@repo/core"
 
 // Mock data - replace with actual API call
 const mockExpenses = [
@@ -87,16 +87,15 @@ const mockExpenses = [
     },
 ]
 
-export default function ExpensesPage({ userId, expenses }: { userId: string, expenses: AllExpensesListItem[] }) {
+export default function ExpensesPage({ userId, expensesData }: { userId: string, expensesData: AllExpensesForUser[] }) {
     const [searchQuery, setSearchQuery] = useState("")
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false)
     const [dateFilter, setDateFilter] = useState("all")
     const [sortFilter, setSortFilter] = useState("newest")
     const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null)
-    console.log(expenses);
 
-    // Filter and sort expenses based on user selection
-    // const filteredExpenses = expenses
+    // Filter and sort expensesData based on user selection
+    // const filteredExpenses = expensesData
     //     .filter((expense) => expense.description.toLowerCase().includes(searchQuery.toLowerCase()))
     //     .sort((a, b) => {
     //         if (sortFilter === "oldest") return -1
@@ -115,7 +114,7 @@ export default function ExpensesPage({ userId, expenses }: { userId: string, exp
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div>
                         <h1 className="font-heading text-3xl font-bold tracking-tight">Expenses</h1>
-                        <p className="text-muted-foreground text-sm mt-1">Track all your shared expenses in one place</p>
+                        <p className="text-muted-foreground text-sm mt-1">Track all your shared expensesData in one place</p>
                     </div>
 
                     <div className="flex items-center gap-3 flex-wrap">
@@ -161,9 +160,9 @@ export default function ExpensesPage({ userId, expenses }: { userId: string, exp
             </FadeIn>
 
             {/* Expenses List */}
-            {expenses.length > 0 ? (
+            {expensesData.length > 0 ? (
                 <FadeInStagger className="space-y-3">
-                    {expenses.map((expense) => (
+                    {expensesData.map((expense) => (
                         <FadeInItem key={expense.id}>
                             <ExpenseItem
                             // @ts-ignore
@@ -183,7 +182,7 @@ export default function ExpensesPage({ userId, expenses }: { userId: string, exp
                                 <ReceiptText className="h-10 w-10 text-muted-foreground" />
                             </div>
                             <div className="space-y-2">
-                                <h3 className="font-heading text-2xl font-bold">No expenses yet</h3>
+                                <h3 className="font-heading text-2xl font-bold">No expensesData yet</h3>
                                 <p className="text-muted-foreground max-w-md">
                                     Add your first expense to start tracking shared costs with your groups.
                                 </p>

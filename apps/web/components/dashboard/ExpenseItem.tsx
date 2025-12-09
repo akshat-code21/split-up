@@ -8,20 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
-import { AllExpensesListItem } from "@repo/core"
-import { group } from "console"
-
-interface Participant {
-  user: {
-    id: string
-    name: string
-    image?: string
-  }
-  share: number
-}
+import { AllExpensesForUser } from "@repo/core"
+import { formatDateHumanReadable } from "../pages/GroupPage"
 
 interface ExpenseItemProps {
-  expense : AllExpensesListItem
+  expense: AllExpensesForUser
   isExpanded: boolean
   onToggle: () => void
 }
@@ -38,15 +29,11 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
   const Icon = Receipt
   const [hoveredParticipant, setHoveredParticipant] = useState<string | null>(null)
 
-  // Mock participants data if not provided
-  // const participants: Participant[] =
-  //   expense.participants ||
-  //   [
-  //     { user: { id: "you", name: "You", image: "" }, share: expense.yourShare },
-  //     { user: { id: "user2", name: "Mehul", image: "" }, share: expense.amount / expense.splitBetween },
-  //     { user: { id: "user3", name: "Apurv", image: "" }, share: expense.amount / expense.splitBetween },
-  //     { user: { id: "user4", name: "Sanjay", image: "" }, share: expense.amount / expense.splitBetween },
-  //   ].slice(0, expense.splitBetween)
+  const findStatus = (expense: AllExpensesForUser): string => {
+    if (expense.expense.type === "SETTLEMENT") return "settled"
+    if (expense.userId === expense.expense.payerId) return "lent"
+    else return "borrowed"
+  }
 
   return (
     <div className="relative font-heading">
@@ -90,14 +77,14 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-1.5">
-                  {/* <h4 className="font-semibold text-base truncate">{expense.description}</h4> */}
+                  <h4 className="font-semibold text-base truncate">{expense.expense.description}</h4>
                   <div className="flex items-center gap-2 flex-wrap text-sm">
-                    {/* <p className="text-muted-foreground font-mono text-xs">{expense.date}</p> */}
-                    {expense.group.name && (
+                    <p className="text-muted-foreground font-mono text-xs">{formatDateHumanReadable(new Date(expense.expense.date))}</p>
+                    {expense.expense.group.name && (
                       <>
                         <span className="text-white/20">•</span>
                         <Badge variant="outline" className="text-xs bg-white/5 border-white/10 text-muted-foreground">
-                          {expense.group.name}
+                          {expense.expense.group.name}
                         </Badge>
                       </>
                     )}
@@ -107,19 +94,19 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
 
               {/* Right Side - Amount & Status */}
               <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
-                {/* <p className="font-heading text-2xl font-bold">₹{expense.amount.toLocaleString()}</p> */}
-                {/* <p
+                <p className="font-heading text-2xl font-bold">₹{expense.expense.amount.toLocaleString()}</p>
+                <p
                   className={cn(
                     "text-sm font-medium",
-                    expense.status === "lent" && "text-green-500",
-                    expense.status === "borrowed" && "text-orange-500",
-                    expense.status === "settled" && "text-muted-foreground",
+                    findStatus(expense) === "lent" && "text-green-500",
+                    findStatus(expense) === "borrowed" && "text-orange-500",
+                    findStatus(expense) === "settled" && "text-muted-foreground",
                   )}
                 >
-                  {expense.status === "lent" && `You lent ₹${(expense.amount - expense.yourShare).toLocaleString()}`}
-                  {expense.status === "borrowed" && `You owe ₹${expense.yourShare.toLocaleString()}`}
-                  {expense.status === "settled" && "Settled"}
-                </p> */}
+                  {findStatus(expense) === "lent" && `You lent ₹${(expense.share).toLocaleString()}`}
+                  {findStatus(expense) === "borrowed" && `You owe ₹${expense.share.toLocaleString()}`}
+                  {findStatus(expense) === "settled" && "Settled"}
+                </p>
                 <ChevronDown className="h-5 w-5 text-muted-foreground" />
               </div>
             </motion.div>
@@ -163,16 +150,16 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                       <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
-                      {expense.group.name && (
+                      {expense.expense.group.name && (
                         <Badge variant="outline" className="text-xs bg-white/5 border-white/10 text-muted-foreground">
-                          {expense.group.name}
+                          {expense.expense.group.name}
                         </Badge>
                       )}
                     </div>
                     <h2 className="font-heading text-2xl md:text-3xl font-bold tracking-tight">
-                      {/* {expense.description} */}
+                      {expense.expense.description}
                     </h2>
-                    {/* <p className="font-mono text-xs text-muted-foreground tracking-wider">{expense.date}</p> */}
+                    <p className="font-mono text-xs text-muted-foreground tracking-wider">{formatDateHumanReadable(new Date(expense.expense.date))}</p>
                   </div>
                   <motion.div
                     initial={{ x: 40, opacity: 0 }}
@@ -186,21 +173,21 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                         "bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent",
                       )}
                     >
-                      {/* ₹{expense.amount.toLocaleString()} */}
+                      ₹{expense.expense.amount.toLocaleString()}
                     </p>
-                    {/* <p
+                    <p
                       className={cn(
                         "text-sm font-medium mt-2",
-                        expense.status === "lent" && "text-green-500",
-                        expense.status === "borrowed" && "text-orange-500",
-                        expense.status === "settled" && "text-muted-foreground",
+                        findStatus(expense) === "lent" && "text-green-500",
+                        findStatus(expense) === "borrowed" && "text-orange-500",
+                        findStatus(expense) === "settled" && "text-muted-foreground",
                       )}
                     >
-                      {expense.status === "lent" &&
-                        `You lent ₹${(expense.amount - expense.yourShare).toLocaleString()}`}
-                      {expense.status === "borrowed" && `You owe ₹${expense.yourShare.toLocaleString()}`}
-                      {expense.status === "settled" && "Settled"}
-                    </p> */}
+                      {findStatus(expense) === "lent" &&
+                        `You lent ₹${(expense.share).toLocaleString()}`}
+                      {findStatus(expense) === "borrowed" && `You owe ₹${expense.share.toLocaleString()}`}
+                      {findStatus(expense) === "settled" && "Settled"}
+                    </p>
                   </motion.div>
                 </div>
               </motion.div>
@@ -215,15 +202,14 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Split Between</p>
                 <TooltipProvider delayDuration={0}>
                   <div className="flex items-center gap-1">
-                    {expense.group.members.map((participant, index) => {
+                    {expense.expense.group.members.map((participant, index) => {
                       const isPayer =
-                      // @ts-ignore
-                        participant.userId === expense.group.expenses.payerId || participant.user.name === expense.group.expenses.payerId
-                      // const owesAmount = participant.share
-                      // const getsBack = isPayer ? expense.amount - participant.share : 0
+                        participant.userId === expense.expense.payerId
+                      const owesAmount = expense.share
+                      const getsBack = isPayer ? expense.expense.amount - expense.share : 0
 
                       return (
-                        <Tooltip key={participant.user.userId}>
+                        <Tooltip key={participant.user.id}>
                           <TooltipTrigger asChild>
                             <motion.div
                               initial={{ scale: 0, opacity: 0 }}
@@ -232,9 +218,9 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                               whileHover={{ scale: 1.15, zIndex: 10 }}
                               className={cn(
                                 "relative -ml-3 first:ml-0 cursor-pointer transition-all duration-200 font-heading",
-                                hoveredParticipant === participant.user.userId && "z-10",
+                                hoveredParticipant === participant.user.id && "z-10",
                               )}
-                              onMouseEnter={() => setHoveredParticipant(participant.user.userId)}
+                              onMouseEnter={() => setHoveredParticipant(participant.user.id)}
                               onMouseLeave={() => setHoveredParticipant(null)}
                             >
                               <Avatar
@@ -243,7 +229,7 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                                   isPayer
                                     ? "border-green-500 shadow-[0_0_15px_#22c55e]"
                                     : "border-orange-500 shadow-[0_0_10px_#f97316]",
-                                  hoveredParticipant === participant.user.userId && "ring-2 ring-white/50",
+                                  hoveredParticipant === participant.user.id && "ring-2 ring-white/50",
                                 )}
                               >
                                 <AvatarImage src={participant.user.image || "/placeholder.svg"} />
@@ -265,15 +251,16 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                             <div className="space-y-1">
                               <p className="font-semibold">{participant.user.name}</p>
                               <p className={cn("text-sm font-heading", isPayer ? "text-green-400" : "text-orange-400")}>
-                                {/* {isPayer
-                                  ? `${participant.user.name} Get back ₹${getsBack.toLocaleString()}`
-                                  : `${participant.user.name} Owes ₹${owesAmount.toLocaleString()}`} */}
+                                {isPayer
+                                  ? `${participant.user.name} Gets back ₹${getsBack.toLocaleString()}`
+                                  : `${participant.user.name} Owes ₹${owesAmount.toLocaleString()}`}
                               </p>
                             </div>
                           </TooltipContent>
                         </Tooltip>
                       )
                     })}
+
                   </div>
                 </TooltipProvider>
               </motion.div>
@@ -283,7 +270,7 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
-                className="grid grid-cols-3 gap-3 mb-6"
+                className="grid grid-cols-2 gap-3 mb-6"
               >
                 {/* Payer Tile */}
                 <motion.div
@@ -296,7 +283,7 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Paid by</p>
-                  {/* <p className="font-semibold">{expense.paidBy}</p> */}
+                  <p className="font-semibold">{expense.expense.payer.name || ""}</p>
                 </motion.div>
 
                 {/* Category Tile */}
@@ -310,10 +297,10 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Category</p>
-                  {/* <p className="font-semibold capitalize">{expense.category || "Other"}</p> */}
+                  <p className="font-semibold capitalize">{"Other"}</p>
                 </motion.div>
 
-                {/* Split Type Tile */}
+                {/* Split Type Tile 
                 <motion.div
                   whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }}
                   className="p-4 rounded-2xl bg-white/5 backdrop-blur-xl transition-colors cursor-default"
@@ -324,8 +311,9 @@ export function ExpenseItem({ expense, isExpanded, onToggle }: ExpenseItemProps)
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Split</p>
-                  {/* <p className="font-semibold capitalize">{expense.splitMethod || "Equal"}</p> */}
+                  <p className="font-semibold capitalize">{expense.splitMethod || "Equal"}</p>
                 </motion.div>
+                */}
               </motion.div>
 
               <motion.div

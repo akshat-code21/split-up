@@ -35,10 +35,8 @@ export default function GroupsPage({ userId, initialGroups }: { userId: string, 
       id: createdGroup.id,
       name: createdGroup.name,
     })
-    console.log("Adding new group:", newGroup)
     setGroups(prev => {
       const updated = [...prev, newGroup]
-      console.log("Updated groups:", updated)
       return updated
     })
     setIsCreateGroupOpen(false)

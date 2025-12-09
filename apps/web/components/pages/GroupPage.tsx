@@ -19,7 +19,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import groupApi from "@/apiClient/group"
 import GroupSkeleton from "./GroupSkeleton"
 
-const formatDateHumanReadable = (date: Date): string => {
+export const formatDateHumanReadable = (date: Date): string => {
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
@@ -180,10 +180,6 @@ export default function GroupPage({ userId, groupId }: { userId: string, groupId
             </div>
         )
     }
-
-    console.log('Group Data:', groupData);
-    console.log('Normalized Group:', group);
-    console.log('Group Loading:', groupLoading);
 
     return (
         <div className="space-y-6">

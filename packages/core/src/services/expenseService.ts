@@ -6,7 +6,7 @@ import {
 	type NotFoundError,
 } from "..";
 import type { User } from "./groupService";
-import type { Expense, GroupMember } from "../../../db/generated/prisma/client";
+import type { Expense, Group, GroupMember, User as PrismaUser } from "../../../db/generated/prisma/client";
 import type { GroupMemberCreateInput } from "../../../db/generated/prisma/models";
 export type ExpenseParticipantInput = {
 	userId: string;
@@ -221,7 +221,7 @@ export type ExpenseGroup = {
 	members: Array<GroupMember & { user: User }>;
 };
 
-export type AllExpensesListItem = {
+export type AllExpensesListItemGroupWise = {
 	id: string;
 	userId: string;
 	groupId: string;
@@ -230,9 +230,9 @@ export type AllExpensesListItem = {
 	group: ExpenseGroup;
 };
 
-export const getAllExpensesForUser = async (
+export const getAllExpensesForUserGroupWise = async (
 	userId: string
-): Promise<AllExpensesListItem[] | NotFoundError> => {
+): Promise<AllExpensesListItemGroupWise[] | NotFoundError> => {
 	const userExists = await checkForUser(userId);
 	if (!userExists) {
 		return {
@@ -272,4 +272,59 @@ export const getAllExpensesForUser = async (
 			})),
 		},
 	}));
+};
+
+
+export type AllExpensesForUser = {
+	id: string;
+	expenseId: string;
+	userId: string;
+	share: number;
+	expense: Expense & {
+		payer: {
+			id: string;
+			name: string | null;
+			email: string;
+			image: string | null;
+		};
+		group: Group & {
+			members: (GroupMember & { user: PrismaUser })[];
+		};
+	};
+	user: PrismaUser;
+};
+
+export const getAllExpensesForUser = async (
+	userId: string
+): Promise<AllExpensesForUser[] | NotFoundError> => {
+	const userExists = await checkForUser(userId);
+	if (!userExists) {
+		return {
+			message: "User doesn't exist",
+			success: false,
+		};
+	}
+	const allExpenses = await client.expenseParticipant.findMany({
+		where: {
+			userId,
+		},
+		include: {
+			expense : {
+				include : {
+					payer: true,
+					group : {
+						include : {
+							members : {
+								include : {
+									user : true
+								}
+							}
+						}
+					}
+				}
+			},
+			user : true
+		},
+	});
+	return allExpenses;
 };
