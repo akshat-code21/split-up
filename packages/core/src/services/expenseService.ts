@@ -7,7 +7,6 @@ import {
 } from "..";
 import type { User } from "./groupService";
 import type { Expense, Group, GroupMember, User as PrismaUser } from "../../../db/generated/prisma/client";
-import type { GroupMemberCreateInput } from "../../../db/generated/prisma/models";
 export type ExpenseParticipantInput = {
 	userId: string;
 	share: number;

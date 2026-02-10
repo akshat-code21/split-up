@@ -1,21 +1,21 @@
-import { getAllExpensesForUser } from "@repo/core";
+import { getAllSettlementsForUser } from "@repo/core";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<NextResponse> {
 	try {
-		const userId = req.headers.get("x-user-id") || "";
+        const userId = req.headers.get("x-user-id") || "";
 		if (!userId) {
 			return NextResponse.json(
 				{ success: false, error: "Unauthorized" },
 				{ status: 401 }
 			);
 		}
-		const allExpenses = await getAllExpensesForUser(userId);
-		return NextResponse.json(
+        const allSettlements = await getAllSettlementsForUser(userId);
+        return NextResponse.json(
 			{
 				success: true,
-				message: "Expenses fetched successfully.",
-				data: allExpenses,
+				message: "Settlements fetched successfully.",
+				data: allSettlements,
 			},
 			{ status: 200 }
 		);

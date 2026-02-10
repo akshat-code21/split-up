@@ -1,5 +1,16 @@
 import { client } from "@repo/db";
-import { checkForUser, checkForMember, checkPayerIsMember,type NotFoundError } from "..";
+import {
+	checkForUser,
+	checkForMember,
+	checkPayerIsMember,
+	type NotFoundError,
+} from "..";
+import type {
+	Expense,
+	Group,
+	GroupMember,
+	User as PrismaUser,
+} from "../../../db/generated/prisma/client";
 
 export type CreateSettlementInput = {
 	groupId: string;
@@ -32,17 +43,17 @@ export const createSettlement = async (
 		};
 	}
 
-    const payeeIsMember = await checkForMember(data.payeeId, data.groupId);
-    if (!payeeIsMember) {
-        return { success: false, message: "Payee must be a member of this group" };
-    }
+	const payeeIsMember = await checkForMember(data.payeeId, data.groupId);
+	if (!payeeIsMember) {
+		return { success: false, message: "Payee must be a member of this group" };
+	}
 
-    if (data.payerId === data.payeeId) {
-        return {
-            success: false,
-            message: "Payer and payee cannot be the same user",
-        };
-    }
+	if (data.payerId === data.payeeId) {
+		return {
+			success: false,
+			message: "Payer and payee cannot be the same user",
+		};
+	}
 
 	const expense = await client.expense.create({
 		data: {
@@ -64,7 +75,59 @@ export const createSettlement = async (
 	return { expenseId: expense.id };
 };
 
+type AllSettlementsForUser = {
+	id: string;
+	expenseId: string;
+	userId: string;
+	share: number;
+	expense: Expense & {
+		payer: {
+			id: string;
+			name: string | null;
+			email: string;
+			image: string | null;
+		};
+		group: Group & {
+			members: (GroupMember & { user: PrismaUser })[];
+		};
+	};
+	user: PrismaUser;
+};
 
-export const getAllSettlements = async() => {
-
-}
+export const getAllSettlementsForUser = async (
+	userId: string
+): Promise<AllSettlementsForUser[] | NotFoundError> => {
+	const userExists = await checkForUser(userId);
+	if (!userExists) {
+		return {
+			message: "User doesn't exist",
+			success: false,
+		};
+	}
+	const allSettlements = await client.expenseParticipant.findMany({
+		where: {
+			userId,
+			expense: {
+				type: "SETTLEMENT",
+			},
+		},
+		include: {
+			expense: {
+				include: {
+					payer: true,
+					group: {
+						include: {
+							members: {
+								include: {
+									user: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			user: true,
+		},
+	});
+	return allSettlements;
+};
